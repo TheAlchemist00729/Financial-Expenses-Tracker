@@ -1,0 +1,65 @@
+const db = require('../db');
+
+exports.createExpense = async (req, res) => {
+  const { amount, description, date, category } = req.body;
+  if (!amount || !description || !date || !category) {
+    return res.status(400).json({ error: 'Missing required fields' });
+  }
+  try {
+    const result = await db.query(
+      `INSERT INTO expenses(user_id, amount, description, date, category)
+       VALUES($1,$2,$3,$4,$5) RETURNING *`,
+      [req.user.id, amount, description, date, category]
+    );
+    res.json({ expense: result.rows[0] });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to save expense' });
+  }
+};
+
+exports.deleteExpense = async (req, res) => {
+  const { id } = req.params;
+  try {
+    const result = await db.query(
+      `DELETE FROM expenses WHERE id=$1 AND user_id=$2 RETURNING id`,
+      [id, req.user.id]
+    );
+    if (result.rowCount === 0) {
+      return res.status(404).json({ error: 'Expense not found' });
+    }
+    res.json({ deletedId: id });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to delete expense' });
+  }
+};
+
+exports.listExpenses = async (req, res) => {
+  try {
+    const result = await db.query(
+      `SELECT * FROM expenses
+       WHERE user_id=$1 ORDER BY date DESC`,
+      [req.user.id]
+    );
+    res.json({ expenses: result.rows });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to fetch expenses' });
+  }
+};
+
+exports.summary = async (req, res) => {
+  try {
+    const result = await db.query(
+      `SELECT category, SUM(amount) AS total
+       FROM expenses WHERE user_id=$1 GROUP BY category`,
+      [req.user.id]
+    );
+    res.json({ summary: result.rows });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to summarize expenses' });
+  }
+};
+

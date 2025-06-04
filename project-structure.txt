@@ -1,0 +1,60 @@
+.
+├── .devcontainer
+│   ├── devcontainer.json
+│   └── dockerCompose.yml
+├── .env
+├── .gitignore
+├── .vscode
+│   └── launch.json
+├── Documentation
+│   ├── README.md
+│   ├── architectural_design.md
+│   ├── product_backlog.md
+│   ├── quality_attributes.md
+│   └── sprint_1_backlog.md
+├── client
+│   ├── .env
+│   ├── package-lock.json
+│   ├── package.json
+│   ├── public
+│   │   └── index.html
+│   └── src
+│       ├── App.jsx
+│       ├── components
+│       │   ├── ExpenseForm.jsx
+│       │   └── SummaryChart.jsx
+│       ├── index.jsx
+│       ├── pages
+│       │   ├── Dashboard.jsx
+│       │   ├── Login.jsx
+│       │   └── Signup.jsx
+│       └── services
+│           ├── auth.js
+│           └── expenses.js
+├── database
+│   ├── expenses.sql
+│   ├── queries.sql
+│   ├── schema.sql
+│   └── users.sql
+├── full-workspace.zip
+├── package-lock.json
+├── package.json
+├── project-structure.txt
+├── server
+│   ├── controllers
+│   │   ├── expensesController
+│   │   └── usersController
+│   ├── db.js
+│   ├── middleware
+│   │   └── auth.js
+│   ├── package-lock.json
+│   ├── package.json
+│   ├── routes
+│   │   ├── expenses.js
+│   │   └── users.js
+│   └── server.js
+└── tests
+    ├── serverExpensesTests.js
+    └── serverUsersTests
+
+15 directories, 42 files
