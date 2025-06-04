@@ -17,7 +17,12 @@ export default function Login({ onLoginSuccess }) {
       return;
     }
 
-    onLoginSuccess?.({ username: form.username.trim() });
+    if (form.username === 'test' && form.password === '123') {
+      setError('');
+      onLoginSuccess?.({ username: form.username.trim() });
+    } else {
+      setError("Sorry, we can't find your account. Please try again.");
+    }
   };
 
   return (
@@ -32,6 +37,7 @@ export default function Login({ onLoginSuccess }) {
           placeholder="Username"
           value={form.username}
           onChange={handleChange}
+          autoComplete="username"
         />
         <input
           type="password"
@@ -39,6 +45,7 @@ export default function Login({ onLoginSuccess }) {
           placeholder="Password"
           value={form.password}
           onChange={handleChange}
+          autoComplete="current-password"
         />
         <button type="submit">Login</button>
       </form>
@@ -49,4 +56,3 @@ export default function Login({ onLoginSuccess }) {
     </div>
   );
 }
-
