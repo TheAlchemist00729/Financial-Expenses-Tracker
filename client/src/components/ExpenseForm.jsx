@@ -88,3 +88,8 @@ export default function ExpenseForm({ onSubmit }) {
   );
 }
 
+const result = await db.query(
+  'INSERT INTO expenses (user_id, amount, description, date, category) VALUES ($1, $2, $3, $4, $5) RETURNING *',
+  [userId, amount, description, date, category]
+);
+

@@ -1,0 +1,15 @@
+CREATE TABLE IF NOT EXISTS users (
+  id SERIAL PRIMARY KEY,
+  username TEXT UNIQUE NOT NULL,
+  password TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS expenses (
+  id SERIAL PRIMARY KEY,
+  user_id INTEGER REFERENCES users(id),
+  amount NUMERIC NOT NULL,
+  description TEXT NOT NULL,
+  date DATE NOT NULL,
+  category TEXT NOT NULL
+);
+

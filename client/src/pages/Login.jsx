@@ -1,49 +1,37 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { login } from '../services/auth';
 
 export default function Login({ onLoginSuccess }) {
   const [form, setForm] = useState({ username: '', password: '' });
   const [error, setError] = useState('');
 
-  const handleChange = e =>
+  const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
+  };
 
-  const handleSubmit = async e => {
+  const handleSubmit = (e) => {
     e.preventDefault();
-    setError('');
 
-    if (!form.username.trim() || !form.password) {
-      return setError('Username and password are required');
+    if (!form.username.trim() || !form.password.trim()) {
+      setError('Username and password are required');
+      return;
     }
 
-    try {
-      const res = await login({
-        username: form.username.trim(),
-        password: form.password,
-      });
-      const { token, user } = res.data;
-      localStorage.setItem('token', token);
-      onLoginSuccess(user);
-    } catch (err) {
-      setError(
-        err.response?.data?.error || 'Login failed. Check credentials.'
-      );
-    }
+    onLoginSuccess?.({ username: form.username.trim() });
   };
 
   return (
-    <div className="max-w-md mx-auto p-4">
-      <h2 className="text-2xl mb-4">Login</h2>
-      {error && <div className="text-red-600 mb-2">{error}</div>}
-      <form onSubmit={handleSubmit} className="space-y-2">
+    <div style={{ maxWidth: 400, margin: 'auto', padding: '2rem' }}>
+      <h2>Login</h2>
+      {error && <p style={{ color: 'red' }}>{error}</p>}
+
+      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
         <input
           type="text"
           name="username"
           placeholder="Username"
           value={form.username}
           onChange={handleChange}
-          className="w-full p-2 border"
         />
         <input
           type="password"
@@ -51,16 +39,14 @@ export default function Login({ onLoginSuccess }) {
           placeholder="Password"
           value={form.password}
           onChange={handleChange}
-          className="w-full p-2 border"
         />
-        <button type="submit" className="px-4 py-2 bg-blue-600 text-white">
-          Login
-        </button>
+        <button type="submit">Login</button>
       </form>
-      <p className="mt-4">
-        Don’t have an account?{' '}
-        <Link to="/signup" className="text-blue-600">Sign up here</Link>
+
+      <p style={{ marginTop: '1rem' }}>
+        Don’t have an account? <Link to="/signup">Sign up here</Link>
       </p>
     </div>
   );
 }
+

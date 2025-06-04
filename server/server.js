@@ -4,7 +4,7 @@ const dotenv = require('dotenv');
 const userRoutes = require('./routes/users');
 const expenseRoutes = require('./routes/expenses');
 
-dotenv.config();
+dotenv.config({ path: '../.env' });
 
 const app = express();
 
