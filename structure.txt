@@ -1,11 +1,4 @@
 .
-├── .devcontainer
-│   ├── devcontainer.json
-│   └── dockerCompose.yml
-├── .env
-├── .gitignore
-├── .vscode
-│   └── launch.json
 ├── Documentation
 │   ├── README.md
 │   ├── architectural_design.md
@@ -13,7 +6,6 @@
 │   ├── quality_attributes.md
 │   └── sprint_1_backlog.md
 ├── client
-│   ├── .env
 │   ├── package-lock.json
 │   ├── package.json
 │   ├── public
@@ -36,15 +28,14 @@
 │   ├── queries.sql
 │   ├── schema.sql
 │   └── users.sql
-├── full-workspace.zip
 ├── package-lock.json
 ├── package.json
-├── project-structure.txt
 ├── server
 │   ├── controllers
 │   │   ├── expensesController
 │   │   └── usersController
 │   ├── db.js
+│   ├── index.js
 │   ├── middleware
 │   │   └── auth.js
 │   ├── package-lock.json
@@ -52,9 +43,11 @@
 │   ├── routes
 │   │   ├── expenses.js
 │   │   └── users.js
-│   └── server.js
+│   ├── server.js
+│   └── signup-log.txt
+├── structure.txt
 └── tests
     ├── serverExpensesTests.js
     └── serverUsersTests
 
-15 directories, 42 files
+13 directories, 37 files
