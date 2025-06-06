@@ -1,5 +1,5 @@
 const request = require('supertest');
-const app = require('../server/app');
+const app = require('../app');
 
 
 describe('RQT-13 System: full signup → login flow', () => {
