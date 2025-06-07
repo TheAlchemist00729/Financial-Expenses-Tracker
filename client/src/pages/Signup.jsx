@@ -16,6 +16,7 @@ export default function Signup() {
     if (!form.username.trim() || !form.password) {
       return setError('All fields are required');
     }
+
     try {
       await signup({
         username: form.username.trim(),
@@ -23,6 +24,7 @@ export default function Signup() {
       });
       navigate('/login');
     } catch (err) {
+      console.error('Signup error:', err);
       setError(err.response?.data?.error || 'Signup failed');
     }
   };

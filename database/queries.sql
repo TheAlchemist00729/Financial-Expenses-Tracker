@@ -1,3 +1,9 @@
+INSERT INTO users (username, password)
+VALUES ($1, $2)
+RETURNING id, username;
+
+SELECT * FROM users WHERE username = $1;
+
 INSERT INTO expenses (user_id, amount, description, date, category)
 VALUES ($1, $2, $3, $4, $5)
 RETURNING *;

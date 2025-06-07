@@ -20,7 +20,7 @@ exports.signup = async (req, res) => {
 
     const hash = await bcrypt.hash(password, 10);
     const result = await db.query(
-      `INSERT INTO users(username, password_hash)
+      `INSERT INTO users(username, password)
        VALUES($1, $2)
        RETURNING id, username`,
       [username, hash]
@@ -32,9 +32,9 @@ exports.signup = async (req, res) => {
       { expiresIn: '1h' }
     );
 
-    res.json({ user: result.rows[0], token });
+    res.status(201).json({ user: result.rows[0], token });
   } catch (err) {
-    console.error(err);
+    console.error('Signup Error:', err.message);
     res.status(500).json({ error: 'Signup failed' });
   }
 };
@@ -46,15 +46,14 @@ exports.login = async (req, res) => {
 
   try {
     const result = await db.query(
-      `SELECT id, username, password_hash
-       FROM users WHERE username = $1`,
+      `SELECT id, username, password FROM users WHERE username = $1`,
       [username]
     );
     if (result.rowCount === 0)
       return res.status(401).json({ error: 'Invalid credentials' });
 
     const user = result.rows[0];
-    const isMatch = await bcrypt.compare(password, user.password_hash);
+    const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch)
       return res.status(401).json({ error: 'Invalid credentials' });
 
@@ -64,9 +63,9 @@ exports.login = async (req, res) => {
       { expiresIn: '1h' }
     );
 
-    res.json({ user: { id: user.id, username: user.username }, token });
+    res.status(200).json({ user: { id: user.id, username: user.username }, token });
   } catch (err) {
-    console.error(err);
+    console.error('Login Error:', err.message);
     res.status(500).json({ error: 'Login failed' });
   }
 };

@@ -4,3 +4,56 @@
 [2025-06-06T01:23:18.424Z] users.js module loaded
 [2025-06-06T01:48:02.798Z] users.js module loaded
 [2025-06-06T02:26:17.341Z] users.js module loaded
+[2025-06-06T02:30:52.718Z] users.js module loaded
+[2025-06-07T00:15:15.173Z] users.js module loaded
+[2025-06-07T00:30:25.253Z] users.js module loaded
+[2025-06-07T00:41:02.924Z] users.js module loaded
+[2025-06-07T00:44:41.459Z] users.js module loaded
+[2025-06-07T00:54:12.488Z] users.js module loaded
+[2025-06-07T01:03:25.128Z] users.js module loaded
+[2025-06-07T01:06:55.865Z] users.js module loaded
+[2025-06-07T01:13:48.706Z] users.js module loaded
+[2025-06-07T01:14:29.603Z] Signup route hit (req.body = {"username":"testuser","password":"testpass"})
+[2025-06-07T01:14:29.603Z] → Checking if "testuser" already exists...
+[2025-06-07T01:14:29.615Z] → ERROR during signup for "testuser": AggregateError [ECONNREFUSED]: 
+    at /workspaces/Financial-Expenses-Tracker/server/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async /workspaces/Financial-Expenses-Tracker/server/routes/users.js:33:22
+[2025-06-07T01:15:12.323Z] users.js module loaded
+[2025-06-07T01:15:24.381Z] Signup route hit (req.body = {})
+[2025-06-07T01:15:24.381Z] → Missing username or password
+[2025-06-07T01:16:40.784Z] Signup route hit (req.body = {"username":"testuser","password":"testpass"})
+[2025-06-07T01:16:40.784Z] → Checking if "testuser" already exists...
+[2025-06-07T01:16:40.795Z] → ERROR during signup for "testuser": AggregateError [ECONNREFUSED]: 
+    at /workspaces/Financial-Expenses-Tracker/server/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async /workspaces/Financial-Expenses-Tracker/server/routes/users.js:33:22
+[2025-06-07T01:20:19.521Z] users.js module loaded
+[2025-06-07T01:21:09.275Z] Signup route hit (req.body = {"username":"testuser","password":"testpass"})
+[2025-06-07T01:21:09.275Z] → Checking if "testuser" already exists...
+[2025-06-07T01:21:09.288Z] → ERROR during signup for "testuser": 
+[2025-06-07T01:27:26.114Z] users.js module loaded
+[2025-06-07T01:27:32.646Z] Signup route hit (req.body = {"username":"testuser","password":"testpass"})
+[2025-06-07T01:27:32.646Z] → Checking if "testuser" already exists...
+[2025-06-07T01:27:32.659Z] → ERROR during signup for "testuser": AggregateError [ECONNREFUSED]: 
+    at /workspaces/Financial-Expenses-Tracker/server/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async /workspaces/Financial-Expenses-Tracker/server/routes/users.js:34:22
+[2025-06-07T01:34:47.833Z] users.js module loaded
+[2025-06-07T01:35:18.837Z] users.js module loaded
+[2025-06-07T01:35:44.566Z] users.js module loaded
+[2025-06-07T01:41:00.208Z] users.js module loaded
+[2025-06-07T01:41:12.603Z] users.js module loaded
+[2025-06-07T01:41:25.152Z] Signup route hit (req.body = {"username":"testuser","password":"testpass"})
+[2025-06-07T01:41:25.152Z] → Checking if "testuser" already exists...
+[2025-06-07T01:41:25.164Z] → ERROR during signup for "testuser": error: database "codespace" does not exist
+    at /workspaces/Financial-Expenses-Tracker/server/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async /workspaces/Financial-Expenses-Tracker/server/routes/users.js:34:22
+[2025-06-07T01:47:21.291Z] Signup route hit (req.body = {"username":"testuser","password":"testpass"})
+[2025-06-07T01:47:21.291Z] → Checking if "testuser" already exists...
+[2025-06-07T01:47:21.294Z] → ERROR during signup for "testuser": error: database "codespace" does not exist
+    at /workspaces/Financial-Expenses-Tracker/server/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async /workspaces/Financial-Expenses-Tracker/server/routes/users.js:34:22
+[2025-06-07T01:53:02.141Z] users.js module loaded
