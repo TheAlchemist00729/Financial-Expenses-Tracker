@@ -57,3 +57,17 @@
     at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
     at async /workspaces/Financial-Expenses-Tracker/server/routes/users.js:34:22
 [2025-06-07T01:53:02.141Z] users.js module loaded
+[2025-06-07T01:56:07.156Z] users.js module loaded
+[2025-06-07T01:56:25.182Z] Signup route hit (req.body = {"username":"testuser","password":"testpass"})
+[2025-06-07T01:56:25.182Z] → Checking if "testuser" already exists...
+[2025-06-07T01:56:25.195Z] → ERROR during signup for "testuser": error: database "codespace" does not exist
+    at /workspaces/Financial-Expenses-Tracker/server/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async /workspaces/Financial-Expenses-Tracker/server/routes/users.js:34:22
+[2025-06-07T02:01:43.743Z] users.js module loaded
+[2025-06-07T02:03:10.924Z] Signup route hit (req.body = {"username":"testuser","password":"testpass"})
+[2025-06-07T02:03:10.924Z] → Checking if "testuser" already exists...
+[2025-06-07T02:03:10.944Z] → ERROR during signup for "testuser": error: relation "users" does not exist
+    at /workspaces/Financial-Expenses-Tracker/server/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async /workspaces/Financial-Expenses-Tracker/server/routes/users.js:34:22
