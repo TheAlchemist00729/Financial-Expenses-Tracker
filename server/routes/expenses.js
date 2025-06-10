@@ -5,12 +5,13 @@ const ctrl = require('../controllers/expensesController');
 
 router.use(ensureAuth);
 
-router.post('/', ctrl.createExpense);
+router.post('/', ctrl.validateExpense, ctrl.createExpense);
 
 router.delete('/:id', ctrl.deleteExpense);
 
-router.get('/', ctrl.listExpenses);
 router.get('/summary', ctrl.summary);
+router.get('/', ctrl.listExpenses);
 
 module.exports = router;
+
 

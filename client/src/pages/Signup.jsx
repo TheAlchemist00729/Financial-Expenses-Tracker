@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { signup } from '../services/auth';
 import { useNavigate } from 'react-router-dom';
 
 export default function Signup() {
@@ -7,40 +6,57 @@ export default function Signup() {
   const [error, setError] = useState('');
   const navigate = useNavigate();
 
-  const handleChange = e =>
-    setForm({ ...form, [e.target.name]: e.target.value });
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setForm((prev) => ({ ...prev, [name]: value }));
+  };
 
-  const handleSubmit = async e => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
-    if (!form.username.trim() || !form.password) {
-      return setError('All fields are required');
+
+    const { username, password } = form;
+    if (!username.trim() || !password.trim()) {
+      setError('All fields are required');
+      return;
     }
 
     try {
-      await signup({
-        username: form.username.trim(),
-        password: form.password,
+      console.log('[Signup Submit] Sending credentials', form);
+      const response = await fetch('/api/users/signup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username: username.trim(), password }),
       });
+
+      console.log('[Signup Submit] Response status:', response.status);
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || 'Signup failed');
+      }
+
+      console.log('[Signup Submit] Success:', result);
       navigate('/login');
     } catch (err) {
-      console.error('Signup error:', err);
-      setError(err.response?.data?.error || 'Signup failed');
+      console.error('[Signup Submit] Error:', err);
+      setError(err.message || 'An unexpected error occurred');
     }
   };
 
   return (
-    <div className="max-w-md mx-auto p-4">
-      <h2 className="text-2xl mb-4">Sign Up</h2>
-      {error && <div className="text-red-600 mb-2">{error}</div>}
-      <form onSubmit={handleSubmit} className="space-y-2">
+    <div style={{ maxWidth: 400, margin: '2rem auto', padding: '1rem', border: '1px solid #ddd', borderRadius: 8 }}>
+      <h2>Sign Up</h2>
+      {error && <p style={{ color: 'red' }}>{error}</p>}
+
+      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
         <input
           type="text"
           name="username"
           placeholder="Username"
           value={form.username}
           onChange={handleChange}
-          className="w-full p-2 border"
+          autoComplete="username"
         />
         <input
           type="password"
@@ -48,13 +64,16 @@ export default function Signup() {
           placeholder="Password"
           value={form.password}
           onChange={handleChange}
-          className="w-full p-2 border"
+          autoComplete="new-password"
         />
-        <button type="submit" className="px-4 py-2 bg-green-600 text-white">
-          Sign Up
-        </button>
+        <button type="submit">Sign Up</button>
       </form>
+
+      <p style={{ marginTop: '1rem', textAlign: 'center' }}>
+        Already have an account? <a href="/login">Log in</a>
+      </p>
     </div>
   );
 }
+
 

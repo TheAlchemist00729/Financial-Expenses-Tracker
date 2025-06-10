@@ -1,36 +1,59 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 
 export default function Login({ onLoginSuccess }) {
   const [form, setForm] = useState({ username: '', password: '' });
   const [error, setError] = useState('');
 
+  useEffect(() => {
+    console.log('[Login component mounted]');
+  }, []);
+
   const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    setForm(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setError('');
 
-    if (!form.username.trim() || !form.password.trim()) {
-      setError('Username and password are required');
+    const { username, password } = form;
+    if (!username.trim() || !password.trim()) {
+      setError('Both username and password are required');
       return;
     }
 
-    if (form.username === 'test' && form.password === '123') {
-      setError('');
-      onLoginSuccess?.({ username: form.username.trim() });
-    } else {
-      setError("Sorry, we can't find your account. Please try again.");
+    try {
+      console.log('[Login Submit] Sending credentials', form);
+      const response = await fetch('/api/users/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password }),
+      });
+
+      console.log('[Login Submit] Response status:', response.status);
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || 'Login failed');
+      }
+
+      console.log('[Login Submit] Success:', result);
+      onLoginSuccess?.(result);
+
+    } catch (err) {
+      console.error('[Login Submit] Error:', err);
+      setError(err.message || 'An unexpected error occurred');
     }
   };
 
   return (
-    <div style={{ maxWidth: 400, margin: 'auto', padding: '2rem' }}>
+    <div style={{ maxWidth: 400, margin: '2rem auto', padding: '1rem', border: '1px solid #ddd', borderRadius: 8 }}>
       <h2>Login</h2>
       {error && <p style={{ color: 'red' }}>{error}</p>}
 
-      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
         <input
           type="text"
           name="username"
@@ -50,9 +73,11 @@ export default function Login({ onLoginSuccess }) {
         <button type="submit">Login</button>
       </form>
 
-      <p style={{ marginTop: '1rem' }}>
-        Don’t have an account? <Link to="/signup">Sign up here</Link>
+      <p style={{ marginTop: '1rem', textAlign: 'center' }}>
+        Don’t have an account? <Link to="/signup">Sign up</Link>
       </p>
     </div>
   );
 }
+
+

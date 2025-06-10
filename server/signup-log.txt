@@ -71,3 +71,30 @@
     at /workspaces/Financial-Expenses-Tracker/server/node_modules/pg-pool/index.js:45:11
     at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
     at async /workspaces/Financial-Expenses-Tracker/server/routes/users.js:34:22
+[2025-06-10T01:16:31.969Z] users.js module loaded
+[2025-06-10T01:25:29.846Z] Signup route hit (req.body = {"username":"testuser","password":"testpass"})
+[2025-06-10T01:25:29.846Z] → Checking if "testuser" already exists...
+[2025-06-10T01:25:29.931Z] → Username "testuser" already exists
+[2025-06-10T01:29:53.967Z] users.js module loaded
+[2025-06-10T01:50:51.981Z] users.js module loaded
+[2025-06-10T01:53:38.974Z] users.js module loaded
+[2025-06-10T01:56:01.581Z] users.js module loaded
+[2025-06-10T01:59:25.169Z] Signup route hit (req.body = {"username":"testuser","password":"testpass"})
+[2025-06-10T01:59:25.170Z] → Checking if "testuser" already exists...
+[2025-06-10T01:59:25.191Z] → Username "testuser" already exists
+[2025-06-10T02:00:28.624Z] Signup route hit (req.body = {"username":"joshua","password":"password"})
+[2025-06-10T02:00:28.624Z] → Checking if "joshua" already exists...
+[2025-06-10T02:00:28.629Z] → Hashing password for "joshua"
+[2025-06-10T02:00:28.694Z] → Inserting new user "joshua" into database
+[2025-06-10T02:00:28.707Z] → Signup successful for "joshua" (user ID: 2)
+[2025-06-10T02:02:06.936Z] Login route hit (req.body = {"username":"joshua","password":"password"})
+[2025-06-10T02:02:06.936Z] → Retrieving user "joshua"
+[2025-06-10T02:02:07.058Z] → Login successful for "joshua" (user ID: 2)
+[2025-06-10T02:07:08.710Z] users.js module loaded
+[2025-06-10T02:11:31.114Z] users.js module loaded
+[2025-06-10T02:24:01.475Z] users.js module loaded
+[2025-06-10T02:31:51.559Z] users.js module loaded
+[2025-06-10T02:39:26.760Z] users.js module loaded
+[2025-06-10T02:43:52.005Z] users.js module loaded
+[2025-06-10T02:46:42.607Z] users.js module loaded
+[2025-06-10T02:47:32.710Z] users.js module loaded
