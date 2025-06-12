@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 export default function Login({ onLoginSuccess }) {
   const [form, setForm] = useState({ username: '', password: '' });
   const [error, setError] = useState('');
+  const navigate = useNavigate();
 
   useEffect(() => {
     console.log('[Login component mounted]');
@@ -25,25 +26,19 @@ export default function Login({ onLoginSuccess }) {
     }
 
     try {
-      console.log('[Login Submit] Sending credentials', form);
       const response = await fetch('/api/users/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password }),
       });
-
-      console.log('[Login Submit] Response status:', response.status);
       const result = await response.json();
+      if (!response.ok) throw new Error(result.error || 'Login failed');
 
-      if (!response.ok) {
-        throw new Error(result.error || 'Login failed');
-      }
+      onLoginSuccess(result.user);
 
-      console.log('[Login Submit] Success:', result);
-      onLoginSuccess?.(result);
-
+      navigate('/dashboard');
     } catch (err) {
-      console.error('[Login Submit] Error:', err);
+      console.error(err);
       setError(err.message || 'An unexpected error occurred');
     }
   };

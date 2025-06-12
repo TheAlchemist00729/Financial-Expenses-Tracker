@@ -20,7 +20,7 @@ module.exports = function ensureAuth(req, res, next) {
 
   try {
     const payload = jwt.verify(token, process.env.JWT_SECRET);
-    req.user = payload.user;
+    req.user = payload;
     return next();
   } catch (err) {
     console.error('[Auth] JWT verification failed:', err.message);

@@ -98,3 +98,15 @@
 [2025-06-10T02:43:52.005Z] users.js module loaded
 [2025-06-10T02:46:42.607Z] users.js module loaded
 [2025-06-10T02:47:32.710Z] users.js module loaded
+[2025-06-12T00:15:45.365Z] Login requested for user: joshua
+[2025-06-12T00:15:45.704Z] Login success for user: joshua (id: 2)
+[2025-06-12T00:25:26.713Z] Login requested for user: joshua
+[2025-06-12T00:25:26.794Z] Login success for user: joshua (id: 2)
+[2025-06-12T00:37:40.104Z] Login requested for user: joshua
+[2025-06-12T00:37:40.186Z] Login success for user: joshua (id: 2)
+[2025-06-12T00:41:23.831Z] Login requested for user: joshua
+[2025-06-12T00:41:23.912Z] Login success for user: joshua (id: 2)
+[2025-06-12T01:16:20.160Z] Login requested for user: joshua
+[2025-06-12T01:16:20.250Z] Login success for user: joshua (id: 2)
+[2025-06-12T01:19:35.712Z] Signup requested for user: username1
+[2025-06-12T01:19:35.926Z] Signup success for user: username1 (id: 3)
