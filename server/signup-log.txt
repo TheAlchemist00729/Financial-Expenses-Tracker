@@ -110,3 +110,9 @@
 [2025-06-12T01:16:20.250Z] Login success for user: joshua (id: 2)
 [2025-06-12T01:19:35.712Z] Signup requested for user: username1
 [2025-06-12T01:19:35.926Z] Signup success for user: username1 (id: 3)
+[2025-06-12T01:33:42.691Z] Login requested for user: joshua
+[2025-06-12T01:33:42.770Z] Login success for user: joshua (id: 2)
+[2025-06-12T01:34:39.519Z] Signup requested for user: username2
+[2025-06-12T01:34:39.602Z] Signup success for user: username2 (id: 4)
+[2025-06-12T01:35:30.564Z] Login requested for user: joshua
+[2025-06-12T01:35:30.644Z] Login success for user: joshua (id: 2)
