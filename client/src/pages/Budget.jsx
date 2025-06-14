@@ -19,11 +19,62 @@ export default function Budget({ user }) {
     setLoading(true);
     setError('');
     try {
+      console.log('Starting to fetch budgets...');
       const response = await fetchBudgets();
-      setBudgets(response.data.budgets || []);
+      
+      console.log('Full response:', response);
+      console.log('Response data:', response.data);
+      console.log('Response status:', response.status);
+      console.log('Response headers:', response.headers);
+      console.log('Type of response:', typeof response);
+      console.log('Type of response.data:', typeof response.data);
+      console.log('Is response.data an array?', Array.isArray(response.data));
+      console.log('Response.data keys:', response.data ? Object.keys(response.data) : 'No data');
+      
+      let budgetsData = [];
+      if (Array.isArray(response)) {
+        // Response is directly the budgets array
+        budgetsData = response;
+      } else if (response && response.budgets && Array.isArray(response.budgets)) {
+        // Response is an object with budgets property
+        budgetsData = response.budgets;
+      } else if (response && Array.isArray(response.data)) {
+        // Response has data property with array
+        budgetsData = response.data;
+      } else {
+        console.warn('Unexpected response structure:', response);
+      }
+      
+      console.log('Processed budgets data:', budgetsData);
+      setBudgets(budgetsData);
+      
     } catch (err) {
-      console.error('Error loading budgets:', err);
-      setError('Failed to load budgets');
+      console.error('Full error object:', err);
+      console.error('Error message:', err.message);
+      console.error('Error response:', err.response);
+      console.error('Error response data:', err.response?.data);
+      console.error('Error response status:', err.response?.status);
+      
+      let errorMessage = 'Failed to load budgets';
+      if (err.response) {
+        if (err.response.status === 401) {
+          errorMessage = 'Authentication required. Please log in again.';
+        } else if (err.response.status === 403) {
+          errorMessage = 'Access denied. You may not have permission to view budgets.';
+        } else if (err.response.status === 404) {
+          errorMessage = 'Budgets endpoint not found. Check your API configuration.';
+        } else if (err.response.status >= 500) {
+          errorMessage = 'Server error. Please try again later.';
+        } else if (err.response.data?.message) {
+          errorMessage = err.response.data.message;
+        } else if (err.response.data?.error) {
+          errorMessage = err.response.data.error;
+        }
+      } else if (err.message) {
+        errorMessage = err.message;
+      }
+      
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -48,11 +99,11 @@ export default function Budget({ user }) {
     switch (periodType) {
       case 'weekly':
         const startOfWeek = new Date(now);
-        startOfWeek.setDate(now.getDate() - now.getDay()); // Start of current week (Sunday)
+        startOfWeek.setDate(now.getDate() - now.getDay());
         startDate = startOfWeek.toISOString().split('T')[0];
         
         const endOfWeek = new Date(startOfWeek);
-        endOfWeek.setDate(startOfWeek.getDate() + 6); // End of current week (Saturday)
+        endOfWeek.setDate(startOfWeek.getDate() + 6);
         endDate = endOfWeek.toISOString().split('T')[0];
         break;
         
@@ -89,6 +140,7 @@ export default function Budget({ user }) {
         end_date: endDate
       };
 
+      console.log('Creating budget with data:', budgetData);
       await createBudget(budgetData);
       setFormData({
         name: '',
@@ -99,7 +151,7 @@ export default function Budget({ user }) {
       await loadBudgets();
     } catch (err) {
       console.error('Error creating budget:', err);
-      setError(err.response?.data?.error || 'Failed to create budget');
+      setError(err.response?.data?.error || err.response?.data?.message || 'Failed to create budget');
     } finally {
       setSubmitting(false);
     }
@@ -107,6 +159,7 @@ export default function Budget({ user }) {
 
   const handleDelete = async (budgetId) => {
     try {
+      console.log('Deleting budget with ID:', budgetId);
       await deleteBudget(budgetId);
       setBudgets(budgets.filter(b => b.id !== budgetId));
     } catch (err) {
@@ -150,7 +203,35 @@ export default function Budget({ user }) {
         </div>
       )}
 
-      {/* Create Budget Form */}
+      {}
+      <div style={{ 
+        backgroundColor: '#e3f2fd', 
+        padding: '1rem', 
+        borderRadius: '4px',
+        marginBottom: '1rem',
+        fontSize: '0.9rem'
+      }}>
+        <strong>Debug Info:</strong>
+        <div>Budgets count: {budgets.length}</div>
+        <div>Loading: {loading ? 'Yes' : 'No'}</div>
+        <div>Error: {error || 'None'}</div>
+        <button 
+          onClick={loadBudgets}
+          style={{ 
+            backgroundColor: '#2196f3', 
+            color: 'white', 
+            border: 'none', 
+            padding: '0.25rem 0.5rem', 
+            borderRadius: '4px',
+            marginTop: '0.5rem',
+            cursor: 'pointer'
+          }}
+        >
+          Retry Load Budgets
+        </button>
+      </div>
+
+      {}
       <div style={{ 
         backgroundColor: '#f5f5f5', 
         padding: '1.5rem', 
@@ -259,7 +340,7 @@ export default function Budget({ user }) {
         </form>
       </div>
 
-      {/* Existing Budgets */}
+      {}
       <div>
         <h2>Your Budgets</h2>
         {loading ? (

@@ -18,7 +18,7 @@ export const fetchBudgets = async () => {
     const response = await api.get('/budgets');
     console.log('✅ Budgets response received:', response);
     
-    return response.data; // Note: removed .budgets since your controller returns the array directly
+    return response.data;
   } catch (error) {
     console.error('❌ Error fetching budgets:', error);
     
@@ -39,7 +39,7 @@ export const fetchBudgets = async () => {
 export const fetchBudgetById = async (id) => {
   try {
     const response = await api.get(`/budgets/${id}`);
-    return response.data; // Note: removed .budget since your controller returns the object directly
+    return response.data;
   } catch (error) {
     console.error('Error fetching budget:', error);
     throw error;
@@ -49,7 +49,7 @@ export const fetchBudgetById = async (id) => {
 export const updateBudget = async (id, budgetData) => {
   try {
     const response = await api.put(`/budgets/${id}`, budgetData);
-    return response.data; // Note: removed .budget since your controller returns the object directly
+    return response.data;
   } catch (error) {
     console.error('Error updating budget:', error);
     throw error;
@@ -75,7 +75,7 @@ export const fetchBudgetStatus = async () => {
     console.log('📊 Response status:', response.status);
     console.log('📋 Response data:', response.data);
     
-    return response.data; // Note: removed .budgetStatus since your controller returns the array directly
+    return response.data;
   } catch (error) {
     console.error('❌ Error fetching budget status:', error);
     

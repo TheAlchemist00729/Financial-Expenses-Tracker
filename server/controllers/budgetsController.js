@@ -90,7 +90,6 @@ const getBudgetExpenses = async (req, res) => {
     
     const budget = budgetResult.rows[0];
     
-    // Fixed: Join by category instead of budget_id
     const expensesResult = await db.query(`
       SELECT * FROM expenses 
       WHERE category = $1 
@@ -141,7 +140,6 @@ const createBudget = async (req, res) => {
     const { name, amount, category, period_type, start_date, end_date } = req.body;
     const userId = req.user.id;
     
-    // Additional validation for period_type since it's required in schema
     if (!name || !amount || !category || !period_type || !start_date || !end_date) {
       console.log('[CREATE BUDGET] Missing required fields');
       return res.status(400).json({ 
