@@ -3,13 +3,19 @@ const db = require('../db');
 const listBudgets = async (req, res) => {
   try {
     const userId = req.user.id;
+    console.log('[LIST BUDGETS] Fetching budgets for user:', userId);
+    
     const result = await db.query(
       'SELECT * FROM budgets WHERE user_id = $1 ORDER BY created_at DESC',
       [userId]
     );
+    
+    console.log('[LIST BUDGETS] Found budgets:', result.rows.length);
+    console.log('[LIST BUDGETS] Budgets data:', result.rows);
+    
     res.json(result.rows);
   } catch (error) {
-    console.error('Error fetching budgets:', error);
+    console.error('[LIST BUDGETS] Error fetching budgets:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 };
@@ -102,29 +108,50 @@ const getBudgetExpenses = async (req, res) => {
 };
 
 const validateBudget = (req, res, next) => {
+  console.log('[VALIDATE BUDGET] Request body:', req.body);
+  
   const { name, amount, category, start_date, end_date } = req.body;
   
   if (!name || !amount || !category || !start_date || !end_date) {
+    console.log('[VALIDATE BUDGET] Missing required fields');
     return res.status(400).json({ 
       error: 'Missing required fields: name, amount, category, start_date, end_date' 
     });
   }
   
   if (amount <= 0) {
+    console.log('[VALIDATE BUDGET] Invalid amount:', amount);
     return res.status(400).json({ error: 'Amount must be greater than 0' });
   }
   
   if (new Date(start_date) >= new Date(end_date)) {
+    console.log('[VALIDATE BUDGET] Invalid dates - start:', start_date, 'end:', end_date);
     return res.status(400).json({ error: 'Start date must be before end date' });
   }
   
+  console.log('[VALIDATE BUDGET] Validation passed');
   next();
 };
 
 const createBudget = async (req, res) => {
   try {
+    console.log('[CREATE BUDGET] Request body:', req.body);
+    console.log('[CREATE BUDGET] User ID:', req.user.id);
+    
     const { name, amount, category, period_type, start_date, end_date } = req.body;
     const userId = req.user.id;
+    
+    // Additional validation for period_type since it's required in schema
+    if (!name || !amount || !category || !period_type || !start_date || !end_date) {
+      console.log('[CREATE BUDGET] Missing required fields');
+      return res.status(400).json({ 
+        error: 'Missing required fields: name, amount, category, period_type, start_date, end_date' 
+      });
+    }
+    
+    console.log('[CREATE BUDGET] Creating budget with data:', {
+      userId, name, amount, category, period_type, start_date, end_date
+    });
     
     const result = await db.query(
       `INSERT INTO budgets (user_id, name, amount, category, period_type, start_date, end_date) 
@@ -132,9 +159,10 @@ const createBudget = async (req, res) => {
       [userId, name, amount, category, period_type, start_date, end_date]
     );
     
+    console.log('[CREATE BUDGET] Budget created successfully:', result.rows[0]);
     res.status(201).json(result.rows[0]);
   } catch (error) {
-    console.error('Error creating budget:', error);
+    console.error('[CREATE BUDGET] Error creating budget:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 };
