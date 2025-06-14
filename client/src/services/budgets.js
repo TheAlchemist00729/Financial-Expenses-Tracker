@@ -1,11 +1,4 @@
-import axios from 'axios';
-
-const API_BASE = process.env.REACT_APP_API_URL || 'http://localhost:5000';
-
-const api = axios.create({
-  baseURL: API_BASE,
-  withCredentials: true,
-});
+import api from './api.js';
 
 export const createBudget = async (budgetData) => {
   try {
@@ -19,10 +12,26 @@ export const createBudget = async (budgetData) => {
 
 export const fetchBudgets = async () => {
   try {
+    console.log('🔍 Attempting to fetch budgets...');
+    console.log('🌐 Making request to: /budgets');
+    
     const response = await api.get('/budgets');
-    return response.data.budgets;
+    console.log('✅ Budgets response received:', response);
+    
+    return response.data; // Note: removed .budgets since your controller returns the array directly
   } catch (error) {
-    console.error('Error fetching budgets:', error);
+    console.error('❌ Error fetching budgets:', error);
+    
+    if (error.response) {
+      console.error('🔴 Response status:', error.response.status);
+      console.error('🔴 Response data:', error.response.data);
+      console.error('🔴 Full URL that failed:', error.config?.url);
+    } else if (error.request) {
+      console.error('🔴 No response received:', error.request);
+    } else {
+      console.error('🔴 Error message:', error.message);
+    }
+    
     throw error;
   }
 };
@@ -30,7 +39,7 @@ export const fetchBudgets = async () => {
 export const fetchBudgetById = async (id) => {
   try {
     const response = await api.get(`/budgets/${id}`);
-    return response.data.budget;
+    return response.data; // Note: removed .budget since your controller returns the object directly
   } catch (error) {
     console.error('Error fetching budget:', error);
     throw error;
@@ -40,7 +49,7 @@ export const fetchBudgetById = async (id) => {
 export const updateBudget = async (id, budgetData) => {
   try {
     const response = await api.put(`/budgets/${id}`, budgetData);
-    return response.data.budget;
+    return response.data; // Note: removed .budget since your controller returns the object directly
   } catch (error) {
     console.error('Error updating budget:', error);
     throw error;
@@ -60,15 +69,13 @@ export const deleteBudget = async (id) => {
 export const fetchBudgetStatus = async () => {
   try {
     console.log('🔍 Attempting to fetch budget status...');
-    console.log('🌐 API Base URL:', API_BASE);
-    console.log('🔗 Full URL:', `${API_BASE}/budgets/status`);
     
     const response = await api.get('/budgets/status');
     console.log('✅ Response received:', response);
     console.log('📊 Response status:', response.status);
     console.log('📋 Response data:', response.data);
     
-    return response.data.budgetStatus;
+    return response.data; // Note: removed .budgetStatus since your controller returns the array directly
   } catch (error) {
     console.error('❌ Error fetching budget status:', error);
     

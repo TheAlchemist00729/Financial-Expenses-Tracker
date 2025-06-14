@@ -1,219 +1,196 @@
 const db = require('../db');
-const path = require('path');
-require('dotenv').config({ path: path.resolve(__dirname, '../.env') });
 
-const HTTP_BAD_REQUEST = 400;
-const HTTP_NOT_FOUND = 404;
-const HTTP_SERVER_ERROR = 500;
-
-exports.validateBudget = (req, res, next) => {
-  const { name, amount, category, period } = req.body;
-  if (
-    !name?.trim() ||
-    amount == null ||
-    typeof amount !== 'number' ||
-    !category?.trim() ||
-    !period?.trim()
-  ) {
-    return res
-      .status(HTTP_BAD_REQUEST)
-      .json({ error: 'All fields (name, amount, category, period) are required and must be valid' });
+const listBudgets = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const result = await db.query(
+      'SELECT * FROM budgets WHERE user_id = $1 ORDER BY created_at DESC',
+      [userId]
+    );
+    res.json(result.rows);
+  } catch (error) {
+    console.error('Error fetching budgets:', error);
+    res.status(500).json({ error: 'Internal server error' });
   }
+};
 
+const getBudgetStatus = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    
+    const query = `
+      SELECT 
+        b.id,
+        b.name,
+        b.amount as budget_amount,
+        b.category,
+        b.period_type,
+        b.start_date,
+        b.end_date,
+        COALESCE(SUM(e.amount), 0) as spent_amount,
+        ROUND((COALESCE(SUM(e.amount), 0) / b.amount) * 100, 2) as percentage_used
+      FROM budgets b
+      LEFT JOIN expenses e ON b.category = e.category 
+        AND e.user_id = b.user_id
+        AND e.date >= b.start_date 
+        AND e.date <= b.end_date
+      WHERE b.user_id = $1
+      GROUP BY b.id, b.name, b.amount, b.category, b.period_type, b.start_date, b.end_date
+      ORDER BY b.created_at DESC
+    `;
+    
+    const result = await db.query(query, [userId]);
+    res.json(result.rows);
+  } catch (error) {
+    console.error('Error fetching budget status:', error);
+    res.status(500).json({ error: 'Failed to fetch budget status' });
+  }
+};
+
+const getBudgetById = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const userId = req.user.id;
+    
+    const result = await db.query(
+      'SELECT * FROM budgets WHERE id = $1 AND user_id = $2',
+      [id, userId]
+    );
+    
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Budget not found' });
+    }
+    
+    res.json(result.rows[0]);
+  } catch (error) {
+    console.error('Error fetching budget:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+const getBudgetExpenses = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const userId = req.user.id;
+    
+    const budgetResult = await db.query(
+      'SELECT * FROM budgets WHERE id = $1 AND user_id = $2',
+      [id, userId]
+    );
+    
+    if (budgetResult.rows.length === 0) {
+      return res.status(404).json({ error: 'Budget not found' });
+    }
+    
+    const budget = budgetResult.rows[0];
+    
+    // Fixed: Join by category instead of budget_id
+    const expensesResult = await db.query(`
+      SELECT * FROM expenses 
+      WHERE category = $1 
+        AND user_id = $2
+        AND date >= $3 
+        AND date <= $4
+      ORDER BY date DESC
+    `, [budget.category, userId, budget.start_date, budget.end_date]);
+    
+    res.json(expensesResult.rows);
+  } catch (error) {
+    console.error('Error fetching budget expenses:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+const validateBudget = (req, res, next) => {
+  const { name, amount, category, start_date, end_date } = req.body;
+  
+  if (!name || !amount || !category || !start_date || !end_date) {
+    return res.status(400).json({ 
+      error: 'Missing required fields: name, amount, category, start_date, end_date' 
+    });
+  }
+  
   if (amount <= 0) {
-    return res.status(HTTP_BAD_REQUEST).json({ error: 'Amount must be greater than 0' });
+    return res.status(400).json({ error: 'Amount must be greater than 0' });
   }
-
-  req.body.name = name.trim();
-  req.body.category = category.trim();
-  req.body.period = period.trim();
+  
+  if (new Date(start_date) >= new Date(end_date)) {
+    return res.status(400).json({ error: 'Start date must be before end date' });
+  }
+  
   next();
 };
 
-exports.createBudget = async (req, res) => {
-  const { name, amount, category, period } = req.body;
+const createBudget = async (req, res) => {
   try {
-    const { rows } = await db.query(
-      `INSERT INTO budgets(user_id, name, amount, category, period, created_at)
-       VALUES($1, $2, $3, $4, $5, NOW())
-       RETURNING id, user_id, name, amount, category, period, created_at`,
-      [req.user.id, name, amount, category, period]
-    );
-    return res.status(201).json({ budget: rows[0] });
-  } catch (err) {
-    console.error('[createBudget] Error:', err);
-    return res.status(HTTP_SERVER_ERROR).json({ error: 'Failed to create budget' });
-  }
-};
-
-exports.listBudgets = async (req, res) => {
-  try {
-    const { rows } = await db.query(
-      `SELECT id, user_id, name, amount, category, period, created_at
-       FROM budgets
-       WHERE user_id = $1
-       ORDER BY created_at DESC`,
-      [req.user.id]
-    );
-    return res.json({ budgets: rows });
-  } catch (err) {
-    console.error('[listBudgets] Error:', err);
-    return res.status(HTTP_SERVER_ERROR).json({ error: 'Failed to fetch budgets' });
-  }
-};
-
-exports.getBudgetById = async (req, res) => {
-  const budgetId = parseInt(req.params.id, 10);
-  if (isNaN(budgetId)) {
-    return res.status(HTTP_BAD_REQUEST).json({ error: 'Invalid budget ID' });
-  }
-
-  try {
-    const { rows, rowCount } = await db.query(
-      `SELECT id, user_id, name, amount, category, period, created_at
-       FROM budgets
-       WHERE id = $1 AND user_id = $2`,
-      [budgetId, req.user.id]
+    const { name, amount, category, period_type, start_date, end_date } = req.body;
+    const userId = req.user.id;
+    
+    const result = await db.query(
+      `INSERT INTO budgets (user_id, name, amount, category, period_type, start_date, end_date) 
+       VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *`,
+      [userId, name, amount, category, period_type, start_date, end_date]
     );
     
-    if (rowCount === 0) {
-      return res.status(HTTP_NOT_FOUND).json({ error: 'Budget not found' });
-    }
-    
-    return res.json({ budget: rows[0] });
-  } catch (err) {
-    console.error('[getBudgetById] Error:', err);
-    return res.status(HTTP_SERVER_ERROR).json({ error: 'Failed to fetch budget' });
+    res.status(201).json(result.rows[0]);
+  } catch (error) {
+    console.error('Error creating budget:', error);
+    res.status(500).json({ error: 'Internal server error' });
   }
 };
 
-exports.updateBudget = async (req, res) => {
-  const budgetId = parseInt(req.params.id, 10);
-  if (isNaN(budgetId)) {
-    return res.status(HTTP_BAD_REQUEST).json({ error: 'Invalid budget ID' });
-  }
-
-  const { name, amount, category, period } = req.body;
+const updateBudget = async (req, res) => {
   try {
-    const { rows, rowCount } = await db.query(
+    const { id } = req.params;
+    const { name, amount, category, period_type, start_date, end_date } = req.body;
+    const userId = req.user.id;
+    
+    const result = await db.query(
       `UPDATE budgets 
-       SET name = $1, amount = $2, category = $3, period = $4
-       WHERE id = $5 AND user_id = $6
-       RETURNING id, user_id, name, amount, category, period, created_at`,
-      [name, amount, category, period, budgetId, req.user.id]
+       SET name = $1, amount = $2, category = $3, period_type = $4, start_date = $5, end_date = $6
+       WHERE id = $7 AND user_id = $8 RETURNING *`,
+      [name, amount, category, period_type, start_date, end_date, id, userId]
     );
     
-    if (rowCount === 0) {
-      return res.status(HTTP_NOT_FOUND).json({ error: 'Budget not found' });
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Budget not found' });
     }
     
-    return res.json({ budget: rows[0] });
-  } catch (err) {
-    console.error('[updateBudget] Error:', err);
-    return res.status(HTTP_SERVER_ERROR).json({ error: 'Failed to update budget' });
+    res.json(result.rows[0]);
+  } catch (error) {
+    console.error('Error updating budget:', error);
+    res.status(500).json({ error: 'Internal server error' });
   }
 };
 
-exports.deleteBudget = async (req, res) => {
-  const budgetId = parseInt(req.params.id, 10);
-  if (isNaN(budgetId)) {
-    return res.status(HTTP_BAD_REQUEST).json({ error: 'Invalid budget ID' });
-  }
-
+const deleteBudget = async (req, res) => {
   try {
-    const { rowCount } = await db.query(
-      `DELETE FROM budgets WHERE id = $1 AND user_id = $2`,
-      [budgetId, req.user.id]
+    const { id } = req.params;
+    const userId = req.user.id;
+    
+    const result = await db.query(
+      'DELETE FROM budgets WHERE id = $1 AND user_id = $2 RETURNING *',
+      [id, userId]
     );
     
-    if (rowCount === 0) {
-      return res.status(HTTP_NOT_FOUND).json({ error: 'Budget not found' });
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Budget not found' });
     }
     
-    return res.json({ deletedId: budgetId });
-  } catch (err) {
-    console.error('[deleteBudget] Error:', err);
-    return res.status(HTTP_SERVER_ERROR).json({ error: 'Failed to delete budget' });
+    res.json({ message: 'Budget deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting budget:', error);
+    res.status(500).json({ error: 'Internal server error' });
   }
 };
 
-exports.getBudgetStatus = async (req, res) => {
-  try {
-    const budgetsQuery = await db.query(
-      `SELECT id, name, amount, category, period, created_at
-       FROM budgets
-       WHERE user_id = $1`,
-      [req.user.id]
-    );
-
-    const expensesQuery = await db.query(
-      `SELECT category, SUM(amount)::numeric(10,2) AS total_spent
-       FROM expenses
-       WHERE user_id = $1
-       GROUP BY category`,
-      [req.user.id]
-    );
-
-    const budgets = budgetsQuery.rows;
-    const expensesByCategory = {};
-    
-    expensesQuery.rows.forEach(expense => {
-      expensesByCategory[expense.category] = parseFloat(expense.total_spent);
-    });
-
-    const budgetStatus = budgets.map(budget => {
-      const spent = expensesByCategory[budget.category] || 0;
-      const remaining = budget.amount - spent;
-      const percentUsed = budget.amount > 0 ? (spent / budget.amount) * 100 : 0;
-      
-      return {
-        ...budget,
-        spent: spent,
-        remaining: remaining,
-        percentUsed: Math.round(percentUsed * 100) / 100, // Round to 2 decimals
-        status: percentUsed >= 100 ? 'over' : percentUsed >= 80 ? 'warning' : 'good'
-      };
-    });
-
-    return res.json({ budgetStatus });
-  } catch (err) {
-    console.error('[getBudgetStatus] Error:', err);
-    return res.status(HTTP_SERVER_ERROR).json({ error: 'Failed to fetch budget status' });
-  }
-};
-
-exports.getBudgetExpenses = async (req, res) => {
-  const budgetId = parseInt(req.params.id, 10);
-  if (isNaN(budgetId)) {
-    return res.status(HTTP_BAD_REQUEST).json({ error: 'Invalid budget ID' });
-  }
-
-  try {
-    const budgetQuery = await db.query(
-      `SELECT id, name, category FROM budgets WHERE id = $1 AND user_id = $2`,
-      [budgetId, req.user.id]
-    );
-
-    if (budgetQuery.rowCount === 0) {
-      return res.status(HTTP_NOT_FOUND).json({ error: 'Budget not found' });
-    }
-
-    const budget = budgetQuery.rows[0];
-
-    const expensesQuery = await db.query(
-      `SELECT id, amount, description, date, category
-       FROM expenses
-       WHERE user_id = $1 AND category = $2
-       ORDER BY date DESC`,
-      [req.user.id, budget.category]
-    );
-
-    return res.json({
-      budget: budget,
-      expenses: expensesQuery.rows
-    });
-  } catch (err) {
-    console.error('[getBudgetExpenses] Error:', err);
-    return res.status(HTTP_SERVER_ERROR).json({ error: 'Failed to fetch budget expenses' });
-  }
+module.exports = {
+  listBudgets,
+  getBudgetStatus,
+  getBudgetById,
+  getBudgetExpenses,
+  validateBudget,
+  createBudget,
+  updateBudget,
+  deleteBudget
 };

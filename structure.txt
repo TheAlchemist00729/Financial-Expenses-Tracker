@@ -10,44 +10,59 @@
 │   ├── package.json
 │   ├── public
 │   │   └── index.html
-│   └── src
-│       ├── App.jsx
-│       ├── components
-│       │   ├── ExpenseForm.jsx
-│       │   └── SummaryChart.jsx
-│       ├── index.jsx
-│       ├── pages
-│       │   ├── Dashboard.jsx
-│       │   ├── Login.jsx
-│       │   └── Signup.jsx
-│       └── services
-│           ├── auth.js
-│           └── expenses.js
+│   ├── src
+│   │   ├── App.jsx
+│   │   ├── components
+│   │   │   ├── ExpenseForm.jsx
+│   │   │   └── SummaryChart.jsx
+│   │   ├── index.jsx
+│   │   ├── pages
+│   │   │   ├── Budget.jsx
+│   │   │   ├── Dashboard.jsx
+│   │   │   ├── Login.jsx
+│   │   │   └── Signup.jsx
+│   │   └── services
+│   │       ├── api.js
+│   │       ├── auth.js
+│   │       ├── budgets.js
+│   │       └── expenses.js
+│   └── testsfrontend
 ├── database
-│   ├── expenses.sql
+│   ├── budgets.sql
 │   ├── queries.sql
-│   ├── schema.sql
-│   └── users.sql
+│   └── schema.sql
+├── hash.js
 ├── package-lock.json
 ├── package.json
 ├── server
+│   ├── app.js
 │   ├── controllers
+│   │   ├── budgetsController.js
 │   │   ├── expensesController
 │   │   └── usersController
 │   ├── db.js
-│   ├── index.js
 │   ├── middleware
-│   │   └── auth.js
+│   │   ├── auth.js
+│   │   └── logger.js
 │   ├── package-lock.json
 │   ├── package.json
 │   ├── routes
+│   │   ├── budgets.js
 │   │   ├── expenses.js
 │   │   └── users.js
 │   ├── server.js
-│   └── signup-log.txt
+│   ├── signup-log.txt
+│   └── testsbackend
+│       ├── budgets.system.test.js
+│       ├── budgets.test.js
+│       ├── expenses.delete.test.js
+│       ├── expenses.get.system.test.js
+│       ├── expenses.get.test.js
+│       ├── expenses.system.test.js
+│       ├── expenses.test.js
+│       ├── users.system.test.js
+│       └── users.test.js
 ├── structure.txt
-└── tests
-    ├── serverExpensesTests.js
-    └── serverUsersTests
+└── testsroot
 
-13 directories, 37 files
+13 directories, 52 files
