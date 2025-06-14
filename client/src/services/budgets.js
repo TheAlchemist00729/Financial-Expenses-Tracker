@@ -9,7 +9,7 @@ const api = axios.create({
 
 export const createBudget = async (budgetData) => {
   try {
-    const response = await api.post('/api/budgets', budgetData);
+    const response = await api.post('/budgets', budgetData);
     return response.data;
   } catch (error) {
     console.error('Error creating budget:', error);
@@ -19,8 +19,8 @@ export const createBudget = async (budgetData) => {
 
 export const fetchBudgets = async () => {
   try {
-    const response = await api.get('/api/budgets');
-    return response.data.budgets; // Access the budgets property
+    const response = await api.get('/budgets');
+    return response.data.budgets;
   } catch (error) {
     console.error('Error fetching budgets:', error);
     throw error;
@@ -29,8 +29,8 @@ export const fetchBudgets = async () => {
 
 export const fetchBudgetById = async (id) => {
   try {
-    const response = await api.get(`/api/budgets/${id}`);
-    return response.data.budget; // Access the budget property
+    const response = await api.get(`/budgets/${id}`);
+    return response.data.budget;
   } catch (error) {
     console.error('Error fetching budget:', error);
     throw error;
@@ -39,8 +39,8 @@ export const fetchBudgetById = async (id) => {
 
 export const updateBudget = async (id, budgetData) => {
   try {
-    const response = await api.put(`/api/budgets/${id}`, budgetData);
-    return response.data.budget; // Access the budget property
+    const response = await api.put(`/budgets/${id}`, budgetData);
+    return response.data.budget;
   } catch (error) {
     console.error('Error updating budget:', error);
     throw error;
@@ -49,7 +49,7 @@ export const updateBudget = async (id, budgetData) => {
 
 export const deleteBudget = async (id) => {
   try {
-    const response = await api.delete(`/api/budgets/${id}`);
+    const response = await api.delete(`/budgets/${id}`);
     return response.data;
   } catch (error) {
     console.error('Error deleting budget:', error);
@@ -59,21 +59,40 @@ export const deleteBudget = async (id) => {
 
 export const fetchBudgetStatus = async () => {
   try {
-    const response = await api.get('/api/budgets/status');
-    return response.data.budgetStatus; // Access the budgetStatus property
+    console.log('🔍 Attempting to fetch budget status...');
+    console.log('🌐 API Base URL:', API_BASE);
+    console.log('🔗 Full URL:', `${API_BASE}/budgets/status`);
+    
+    const response = await api.get('/budgets/status');
+    console.log('✅ Response received:', response);
+    console.log('📊 Response status:', response.status);
+    console.log('📋 Response data:', response.data);
+    
+    return response.data.budgetStatus;
   } catch (error) {
-    console.error('Error fetching budget status:', error);
+    console.error('❌ Error fetching budget status:', error);
+    
+    if (error.response) {
+      console.error('🔴 Response status:', error.response.status);
+      console.error('🔴 Response data:', error.response.data);
+      console.error('🔴 Response headers:', error.response.headers);
+    } else if (error.request) {
+      console.error('🔴 No response received:', error.request);
+      console.error('🔴 Network error or server not responding');
+    } else {
+      console.error('🔴 Error message:', error.message);
+    }
+    
     throw error;
   }
 };
 
 export const fetchBudgetExpenses = async (budgetId) => {
   try {
-    const response = await api.get(`/api/budgets/${budgetId}/expenses`);
+    const response = await api.get(`/budgets/${budgetId}/expenses`);
     return response.data;
   } catch (error) {
     console.error('Error fetching budget expenses:', error);
     throw error;
   }
 };
-

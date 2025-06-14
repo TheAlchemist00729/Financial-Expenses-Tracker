@@ -3,6 +3,7 @@ const cors = require('cors');
 const dotenv = require('dotenv');
 const userRoutes = require('./routes/users');
 const expenseRoutes = require('./routes/expenses');
+const budgetRoutes = require('./routes/budgets');
 
 dotenv.config();
 
@@ -13,7 +14,6 @@ app.use((req, res, next) => {
   next();
 });
 
-// Updated CORS configuration for GitHub Codespaces
 app.use(cors({
   origin: [
     'http://localhost:3000',
@@ -29,5 +29,6 @@ app.use(express.json());
 
 app.use('/api/users', userRoutes);
 app.use('/api/expenses', expenseRoutes);
+app.use('/api/budgets', budgetRoutes);
 
 module.exports = app;
