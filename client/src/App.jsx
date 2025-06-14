@@ -4,6 +4,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import Login from './pages/Login';
 import Signup from './pages/Signup';
 import Dashboard from './pages/Dashboard';
+import Budget from './pages/Budget';
 
 export default function App() {
   const [user, setUser] = useState(null);
@@ -28,6 +29,16 @@ export default function App() {
           element={
             user ? (
               <Dashboard user={user} />
+            ) : (
+              <Navigate to="/login" replace />
+            )
+          }
+        />
+        <Route
+          path="/budgets"
+          element={
+            user ? (
+              <Budget user={user} />
             ) : (
               <Navigate to="/login" replace />
             )
