@@ -12,22 +12,27 @@ export default function Dashboard() {
   const [adding, setAdding] = useState(false);
 
   const loadData = async () => {
-    setError('');
-    setLoading(true);
-    try {
-      const [expRes, sumRes] = await Promise.all([
-        fetchExpenses(),
-        fetchSummary(),
-      ]);
-      setExpenses(expRes.data.expenses);
-      setSummary(sumRes.data.summary);
-    } catch (err) {
-      console.error('[Dashboard] loadData error:', err);
-      setError('Failed to load data');
-    } finally {
-      setLoading(false);
-    }
-  };
+  setError('');
+  setLoading(true);
+  try {
+    console.log('[Dashboard] Fetching expenses...');
+    const expRes = await fetchExpenses();
+    console.log('[Dashboard] Fetched expenses:', expRes.data);
+
+    console.log('[Dashboard] Fetching summary...');
+    const sumRes = await fetchSummary();
+    console.log('[Dashboard] Fetched summary:', sumRes.data);
+
+    setExpenses(expRes.data.expenses);
+    setSummary(sumRes.data.summary);
+  } catch (err) {
+    console.error('[Dashboard] loadData error:', err);
+    setError('Failed to load data');
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   useEffect(() => {
     loadData();

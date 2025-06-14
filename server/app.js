@@ -13,8 +13,15 @@ app.use((req, res, next) => {
   next();
 });
 
+// Updated CORS configuration for GitHub Codespaces
 app.use(cors({
-  origin: ['http://localhost:3000', 'http://10.0.3.29:3000'],
+  origin: [
+    'http://localhost:3000',
+    'https://silver-carnival-446w5g5x94jf75wq-3000.app.github.dev',
+    /https:\/\/.*\.app\.github\.dev$/
+  ],
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'Content-Length', 'X-Requested-With'],
   credentials: true
 }));
 

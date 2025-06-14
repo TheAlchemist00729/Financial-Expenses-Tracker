@@ -34,6 +34,8 @@ export default function Login({ onLoginSuccess }) {
       const result = await response.json();
       if (!response.ok) throw new Error(result.error || 'Login failed');
 
+      localStorage.setItem('token', result.token);
+  
       onLoginSuccess(result.user);
 
       navigate('/dashboard');
