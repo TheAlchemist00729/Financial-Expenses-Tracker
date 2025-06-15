@@ -29,7 +29,7 @@ describe('RQT-01 System: create expense after login', () => {
   afterAll(async () => {
     await db.query('DELETE FROM users');
     await db.query('DELETE FROM expenses');
-    // await db.end(); // removed because it's undefined
+    // await db.end();
   });
 
   test('POST /api/expenses with valid token should create expense', async () => {

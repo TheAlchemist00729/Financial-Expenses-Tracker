@@ -3,7 +3,6 @@ const express = require('express');
 const expensesRouter = require('../routes/expenses');
 const db = require('../db');
 const bcrypt = require('bcrypt');
-const jwt = require('jsonwebtoken');
 require('dotenv').config({ path: '../.env' });
 
 jest.mock('../middleware/auth', () => (req, res, next) => {
@@ -18,36 +17,47 @@ function createApp() {
   return app;
 }
 
+let garyId;
+let harryId;
+
 beforeAll(async () => {
-  await db.query('DELETE FROM users');
   await db.query('DELETE FROM expenses');
-  const hashed = await bcrypt.hash('pw', 10);
-  await db.query('INSERT INTO users (username, password) VALUES ($1, $2)', ['gary', hashed]);
+  await db.query('DELETE FROM users');
+
+  const hashed1 = await bcrypt.hash('pw', 10);
+  const resGary = await db.query(
+    'INSERT INTO users (username, password) VALUES ($1, $2) RETURNING id',
+    ['gary', hashed1]
+  );
+  garyId = resGary.rows[0].id;
+
   const hashed2 = await bcrypt.hash('pw2', 10);
-  await db.query('INSERT INTO users (username, password) VALUES ($1, $2) RETURNING id', ['harry', hashed2]);
-  const user2 = (await db.query('SELECT id FROM users WHERE username = $1', ['harry'])).rows[0].id;
+  const resHarry = await db.query(
+    'INSERT INTO users (username, password) VALUES ($1, $2) RETURNING id',
+    ['harry', hashed2]
+  );
+  harryId = resHarry.rows[0].id;
 
   await db.query(
     'INSERT INTO expenses (user_id, amount, description, date, category) VALUES ($1,$2,$3,$4,$5)',
-    [1, 10, 'Test', '2025-06-04', 'Misc']
+    [garyId, 10, 'Test', '2025-06-04', 'Misc']
   );
   await db.query(
     'INSERT INTO expenses (user_id, amount, description, date, category) VALUES ($1,$2,$3,$4,$5)',
-    [user2, 20, 'Other', '2025-06-04', 'Misc']
+    [harryId, 20, 'Other', '2025-06-04', 'Misc']
   );
 });
 
 afterAll(async () => {
-  await db.query('DELETE FROM users');
   await db.query('DELETE FROM expenses');
-  await db.end();
+  await db.query('DELETE FROM users');
 });
 
 describe('RQT-02: DELETE /api/expenses/:id', () => {
   const app = createApp();
 
   test('200: User can delete their own expense', async () => {
-    const { rows } = await db.query('SELECT id FROM expenses WHERE user_id = $1', [1]);
+    const { rows } = await db.query('SELECT id FROM expenses WHERE user_id = $1', [garyId]);
     const expenseId = rows[0].id;
 
     const resp = await request(app)
@@ -58,18 +68,14 @@ describe('RQT-02: DELETE /api/expenses/:id', () => {
   });
 
   test('404 or 400: Cannot delete someone else’s expense', async () => {
-    const { rows } = await db.query(`
-      SELECT e.id FROM expenses e
-      JOIN users u ON e.user_id = u.id
-      WHERE u.username = $1
-    `, ['harry']);
+    const { rows } = await db.query('SELECT id FROM expenses WHERE user_id = $1', [harryId]);
     const otherId = rows[0].id;
 
     const resp = await request(app)
       .delete(`/api/expenses/${otherId}`)
-      .expect(500);
+      .expect(404);
 
-    expect(resp.body.error).toMatch(/failed|not found/i);
+    expect(resp.body.error).toMatch(/not found|unauthorized/i);
   });
 
   test('500: DB error during deletion', async () => {
@@ -86,5 +92,3 @@ describe('RQT-02: DELETE /api/expenses/:id', () => {
     db.query.mockRestore();
   });
 });
-
-
