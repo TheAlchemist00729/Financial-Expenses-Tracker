@@ -3,8 +3,6 @@ const express = require('express');
 const expensesRouter = require('../routes/expenses');
 const db = require('../db');
 const bcrypt = require('bcrypt');
-const jwt = require('jsonwebtoken');
-require('dotenv').config({ path: '../.env' });
 
 jest.mock('../middleware/auth', () => (req, res, next) => {
   req.user = { id: 1 };
@@ -19,22 +17,21 @@ function createApp() {
 }
 
 beforeAll(async () => {
-  await db.query('DELETE FROM users');
   await db.query('DELETE FROM expenses');
+  await db.query('DELETE FROM users');
   const hashed = await bcrypt.hash('pw', 10);
-  await db.query('INSERT INTO users (username, password) VALUES ($1, $2)', ['kate', hashed]);
+  await db.query('INSERT INTO users (id, username, password) VALUES (1, $1, $2)', ['kate', hashed]);
   await db.query(
     `INSERT INTO expenses (user_id, amount, description, date, category) VALUES
-    ($1, 10, 'Coffee', '2025-06-04', 'Beverage'),
-    ($1, 20, 'Lunch', '2025-06-04', 'Food'),
-    ($1, 15, 'Snack', '2025-06-04', 'Food')`,
-    [1]
+    (1, 10, 'Coffee', '2025-06-04', 'Beverage'),
+    (1, 20, 'Lunch', '2025-06-04', 'Food'),
+    (1, 15, 'Snack', '2025-06-04', 'Food')`
   );
 });
+
 afterAll(async () => {
-  await db.query('DELETE FROM users');
   await db.query('DELETE FROM expenses');
-  await db.end();
+  await db.query('DELETE FROM users');
 });
 
 describe('RQT-04: GET /api/expenses', () => {
@@ -48,11 +45,11 @@ describe('RQT-04: GET /api/expenses', () => {
   });
 });
 
-describe('RQT-04: GET /api/summary', () => {
+describe('RQT-04: GET /api/expenses/summary', () => {
   const app = createApp();
 
   test('200: Returns aggregated summary per category', async () => {
-    const resp = await request(app).get('/api/summary').expect(200);
+    const resp = await request(app).get('/api/expenses/summary').expect(200);
     expect(resp.body.summary).toEqual(
       expect.arrayContaining([
         expect.objectContaining({ category: 'Beverage', total: '10.00' }),
@@ -61,5 +58,3 @@ describe('RQT-04: GET /api/summary', () => {
     );
   });
 });
-
-
