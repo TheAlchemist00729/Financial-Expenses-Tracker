@@ -5,7 +5,7 @@ import { fetchBudgetStatus } from '../services/budgets';
 import ExpenseForm from '../components/ExpenseForm';
 import SummaryChart from '../components/SummaryChart';
 
-export default function Dashboard({ user }) {
+export default function Dashboard({ user, onLogout }) {
   const [expenses, setExpenses] = useState([]);
   const [summary, setSummary] = useState([]);
   const [budgetStatus, setBudgetStatus] = useState([]);
@@ -90,6 +90,24 @@ export default function Dashboard({ user }) {
     navigate('/budgets');
   };
 
+  const handleViewInsights = () => {
+    navigate('/insights');
+  };
+
+  const handleLogout = () => {
+    // Clear any stored authentication data
+    localStorage.removeItem('token');
+    localStorage.removeItem('userId');
+    
+    // Call the logout callback if provided
+    if (onLogout) {
+      onLogout();
+    }
+    
+    // Navigate to login page
+    navigate('/login');
+  };
+
   const getExpenseStyle = (expense) => {
     const baseStyle = {
       display: 'flex',
@@ -157,7 +175,7 @@ export default function Dashboard({ user }) {
               <strong>{budget.name}</strong>: ${budget.spent_amount?.toFixed(2) || '0.00'} / ${budget.amount?.toFixed(2) || '0.00'}
               {budget.category && ` (${budget.category})`}
             </div>
-            <div style={{ fontSize: '0.9em', color: '#777' }}>
+            <div style={{ fontSize: '0.9em', color: '#666' }}>
               {budget.alert_type === 'exceeded' 
                 ? 'You have exceeded your budget limit!' 
                 : `You're at ${Math.round((budget.spent_amount / budget.amount) * 100)}% of your budget limit.`
@@ -171,8 +189,53 @@ export default function Dashboard({ user }) {
 
   return (
     <div style={{ maxWidth: 600, margin: '2rem auto', padding: '1rem' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-        <h1>Dashboard</h1>
+      {/* Header with user info and logout */}
+      <div style={{ 
+        display: 'flex', 
+        justifyContent: 'space-between', 
+        alignItems: 'center', 
+        marginBottom: '1rem',
+        padding: '1rem',
+        backgroundColor: '#f8f9fa',
+        borderRadius: '8px',
+        border: '1px solid #dee2e6'
+      }}>
+        <div>
+          <h1 style={{ margin: 0, fontSize: '1.5rem' }}>Dashboard</h1>
+          {user && (
+            <p style={{ margin: '0.25rem 0 0 0', color: '#777', fontSize: '0.875rem' }}>
+              Welcome back, {user.email || user.username || 'User'}!
+            </p>
+          )}
+        </div>
+        <button
+          onClick={handleLogout}
+          style={{
+            backgroundColor: '#dc3545',
+            color: 'white',
+            border: 'none',
+            padding: '0.5rem 1rem',
+            borderRadius: '4px',
+            cursor: 'pointer',
+            fontSize: '0.875rem',
+            fontWeight: 'bold',
+            transition: 'background-color 0.2s'
+          }}
+          onMouseOver={(e) => e.target.style.backgroundColor = '#c82333'}
+          onMouseOut={(e) => e.target.style.backgroundColor = '#dc3545'}
+        >
+          Logout
+        </button>
+      </div>
+
+      {/* Action buttons */}
+      <div style={{ 
+        display: 'flex', 
+        gap: '0.75rem', 
+        marginBottom: '1.5rem',
+        justifyContent: 'center',
+        flexWrap: 'wrap'
+      }}>
         <button
           onClick={handleCreateBudgets}
           style={{
@@ -183,55 +246,136 @@ export default function Dashboard({ user }) {
             borderRadius: '4px',
             cursor: 'pointer',
             fontSize: '1rem',
-            fontWeight: 'bold'
+            fontWeight: 'bold',
+            transition: 'background-color 0.2s'
           }}
+          onMouseOver={(e) => e.target.style.backgroundColor = '#218838'}
+          onMouseOut={(e) => e.target.style.backgroundColor = '#28a745'}
         >
-          Create Budgets
+          📊 Manage Budgets
+        </button>
+        
+        <button
+          onClick={handleViewInsights}
+          style={{
+            backgroundColor: '#007bff',
+            color: 'white',
+            border: 'none',
+            padding: '0.75rem 1.5rem',
+            borderRadius: '4px',
+            cursor: 'pointer',
+            fontSize: '1rem',
+            fontWeight: 'bold',
+            transition: 'background-color 0.2s'
+          }}
+          onMouseOver={(e) => e.target.style.backgroundColor = '#0056b3'}
+          onMouseOut={(e) => e.target.style.backgroundColor = '#007bff'}
+        >
+          📈 Budget Insights
         </button>
       </div>
 
-      {error && <p style={{ color: 'red' }}>{error}</p>}
+      {error && (
+        <div style={{ 
+          color: '#721c24',
+          backgroundColor: '#f8d7da',
+          border: '1px solid #f5c6cb',
+          padding: '0.75rem',
+          borderRadius: '4px',
+          marginBottom: '1rem'
+        }}>
+          {error}
+        </div>
+      )}
 
       {loading ? (
-        <p>Loading data...</p>
+        <div style={{ 
+          textAlign: 'center', 
+          padding: '2rem',
+          color: '#777'
+        }}>
+          Loading data...
+        </div>
       ) : (
         <>
           {renderBudgetAlerts()}
           
-          <ExpenseForm onSubmit={handleAdd} disabled={adding} />
-          <SummaryChart data={summary} />
+          <div style={{ marginBottom: '2rem' }}>
+            <ExpenseForm onSubmit={handleAdd} disabled={adding} />
+          </div>
+          
+          <div style={{ marginBottom: '2rem' }}>
+            <SummaryChart data={summary} />
+          </div>
 
-          <h3>Recent Expenses</h3>
-          {expenses.length ? (
-            expenses.map((e) => (
-              <div key={e.id} style={getExpenseStyle(e)}>
-                <span>
-                  {e.description} — ${e.amount}
-                  {e.category && (
-                    <span style={{ color: '#777', fontSize: '0.9em' }}>
-                      {' '}({e.category})
-                    </span>
-                  )}
-                </span>
-                <button
-                  onClick={() => handleDelete(e.id)}
-                  disabled={deletingId === e.id}
-                  style={{
-                    backgroundColor: '#dc3545',
-                    color: 'white',
-                    border: 'none',
-                    padding: '0.25rem 0.5rem',
-                    borderRadius: '4px',
-                    cursor: deletingId === e.id ? 'not-allowed' : 'pointer'
-                  }}
-                >
-                  {deletingId === e.id ? 'Deleting...' : 'Delete'}
-                </button>
+          <div>
+            <h3 style={{ 
+              borderBottom: '2px solid #007bff', 
+              paddingBottom: '0.5rem',
+              marginBottom: '1rem'
+            }}>
+              Recent Expenses
+            </h3>
+            {expenses.length ? (
+              <div style={{ maxHeight: '400px', overflowY: 'auto' }}>
+                {expenses.map((e) => (
+                  <div key={e.id} style={getExpenseStyle(e)}>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontWeight: '500', marginBottom: '0.25rem' }}>
+                        {e.description}
+                      </div>
+                      <div style={{ display: 'flex', gap: '1rem', fontSize: '0.875rem', color: '#777' }}>
+                        <span>${e.amount}</span>
+                        {e.category && <span>({e.category})</span>}
+                        {e.date && <span>{new Date(e.date).toLocaleDateString()}</span>}
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => handleDelete(e.id)}
+                      disabled={deletingId === e.id}
+                      style={{
+                        backgroundColor: '#dc3545',
+                        color: 'white',
+                        border: 'none',
+                        padding: '0.375rem 0.75rem',
+                        borderRadius: '4px',
+                        cursor: deletingId === e.id ? 'not-allowed' : 'pointer',
+                        fontSize: '0.875rem',
+                        opacity: deletingId === e.id ? 0.6 : 1,
+                        transition: 'background-color 0.2s'
+                      }}
+                      onMouseOver={(e) => {
+                        if (deletingId !== e.id) {
+                          e.target.style.backgroundColor = '#c82333';
+                        }
+                      }}
+                      onMouseOut={(e) => {
+                        if (deletingId !== e.id) {
+                          e.target.style.backgroundColor = '#dc3545';
+                        }
+                      }}
+                    >
+                      {deletingId === e.id ? 'Deleting...' : 'Delete'}
+                    </button>
+                  </div>
+                ))}
               </div>
-            ))
-          ) : (
-            <p>No expenses yet.</p>
-          )}
+            ) : (
+              <div style={{ 
+                textAlign: 'center', 
+                padding: '2rem',
+                color: '#777',
+                backgroundColor: '#f8f9fa',
+                borderRadius: '8px',
+                border: '1px solid #dee2e6'
+              }}>
+                <p style={{ margin: 0, fontSize: '1.125rem' }}>No expenses yet</p>
+                <p style={{ margin: '0.5rem 0 0 0', fontSize: '0.875rem' }}>
+                  Add your first expense using the form above!
+                </p>
+              </div>
+            )}
+          </div>
         </>
       )}
     </div>
