@@ -157,7 +157,7 @@ export default function Dashboard({ user }) {
               <strong>{budget.name}</strong>: ${budget.spent_amount?.toFixed(2) || '0.00'} / ${budget.amount?.toFixed(2) || '0.00'}
               {budget.category && ` (${budget.category})`}
             </div>
-            <div style={{ fontSize: '0.9em', color: '#666' }}>
+            <div style={{ fontSize: '0.9em', color: '#777' }}>
               {budget.alert_type === 'exceeded' 
                 ? 'You have exceeded your budget limit!' 
                 : `You're at ${Math.round((budget.spent_amount / budget.amount) * 100)}% of your budget limit.`
@@ -208,7 +208,7 @@ export default function Dashboard({ user }) {
                 <span>
                   {e.description} — ${e.amount}
                   {e.category && (
-                    <span style={{ color: '#666', fontSize: '0.9em' }}>
+                    <span style={{ color: '#777', fontSize: '0.9em' }}>
                       {' '}({e.category})
                     </span>
                   )}

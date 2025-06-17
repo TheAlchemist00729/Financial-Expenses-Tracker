@@ -230,3 +230,51 @@
 [2025-06-14T20:08:57.482Z] Login success for user: joshua (id: 2)
 [2025-06-14T20:09:42.343Z] Login requested for user: joshua
 [2025-06-14T20:09:42.425Z] Login success for user: joshua (id: 2)
+[2025-06-14T23:41:58.820Z] Signup requested for user: alice
+[2025-06-14T23:41:58.896Z] Signup success for user: alice (id: 5)
+[2025-06-14T23:41:58.918Z] Signup requested for user: charlie
+[2025-06-14T23:41:58.983Z] Signup success for user: charlie (id: 6)
+[2025-06-14T23:41:58.991Z] Signup requested for user: david
+[2025-06-14T23:41:59.000Z] Signup error for david: DB down
+[2025-06-14T23:44:30.576Z] Signup requested for user: alice
+[2025-06-14T23:44:30.658Z] Signup success for user: alice (id: 7)
+[2025-06-14T23:44:30.676Z] Signup requested for user: charlie
+[2025-06-14T23:44:30.740Z] Signup success for user: charlie (id: 8)
+[2025-06-14T23:44:30.746Z] Signup requested for user: charlie
+[2025-06-14T23:44:30.747Z] Signup failed: username exists - charlie
+[2025-06-14T23:44:30.756Z] Signup requested for user: david
+[2025-06-14T23:44:30.771Z] Signup error for david: DB down
+[2025-06-14T23:44:51.174Z] Signup requested for user: alice
+[2025-06-14T23:44:51.245Z] Signup success for user: alice (id: 9)
+[2025-06-14T23:44:51.271Z] Signup requested for user: charlie
+[2025-06-14T23:44:51.372Z] Signup success for user: charlie (id: 10)
+[2025-06-14T23:44:51.379Z] Signup requested for user: david
+[2025-06-14T23:44:51.390Z] Signup error for david: DB down
+[2025-06-14T23:48:23.054Z] Signup requested for user: alice
+[2025-06-14T23:48:23.139Z] Signup success for user: alice (id: 11)
+[2025-06-14T23:48:23.156Z] Signup requested for user: charlie
+[2025-06-14T23:48:23.220Z] Signup success for user: charlie (id: 12)
+[2025-06-14T23:48:23.226Z] Signup requested for user: charlie
+[2025-06-14T23:48:23.227Z] Signup failed: username exists - charlie
+[2025-06-14T23:48:23.236Z] Signup requested for user: david
+[2025-06-14T23:48:23.249Z] Signup error for david: DB down
+[2025-06-14T23:57:00.768Z] Signup requested for user: eve
+[2025-06-14T23:57:00.837Z] Signup success for user: eve (id: 13)
+[2025-06-14T23:57:00.849Z] Login requested for user: eve
+[2025-06-14T23:57:00.913Z] Login success for user: eve (id: 13)
+[2025-06-15T01:04:01.038Z] Login requested for user: testuser
+[2025-06-15T01:04:01.066Z] Login failed: user not found - testuser
+[2025-06-15T01:05:57.487Z] Login requested for user: testuser
+[2025-06-15T01:05:57.524Z] Login failed: user not found - testuser
+[2025-06-17T17:48:37.403Z] Login requested for user: joshua
+[2025-06-17T17:48:37.487Z] Login failed: user not found - joshua
+[2025-06-17T17:50:23.016Z] Login requested for user: joshua
+[2025-06-17T17:50:23.033Z] Login failed: user not found - joshua
+[2025-06-17T17:50:57.735Z] Login requested for user: joshua
+[2025-06-17T17:50:57.739Z] Login failed: user not found - joshua
+[2025-06-17T17:51:19.947Z] Login requested for user: joshua
+[2025-06-17T17:51:19.971Z] Login failed: user not found - joshua
+[2025-06-17T17:52:04.837Z] Signup requested for user: joshua
+[2025-06-17T17:52:04.942Z] Signup success for user: joshua (id: 49)
+[2025-06-17T17:52:12.673Z] Login requested for user: joshua
+[2025-06-17T17:52:12.735Z] Login success for user: joshua (id: 49)
