@@ -4,6 +4,7 @@ const dotenv = require('dotenv');
 const userRoutes = require('./routes/users');
 const expenseRoutes = require('./routes/expenses');
 const budgetRoutes = require('./routes/budgets');
+const visualizationRoutes = require('./routes/visualization')
 
 dotenv.config();
 
@@ -30,5 +31,6 @@ app.use(express.json());
 app.use('/api/users', userRoutes);
 app.use('/api/expenses', expenseRoutes);
 app.use('/api/budgets', budgetRoutes);
+app.use('/api/visualization', visualizationRoutes);
 
 module.exports = app;
