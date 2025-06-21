@@ -4,7 +4,41 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
   LineChart, Line, PieChart, Pie, Cell, AreaChart, Area 
 } from 'recharts';
-import api from '../api';
+import axios from 'axios';
+
+// Use the same API configuration as your working services
+const API = axios.create({ 
+  baseURL: process.env.REACT_APP_API_URL
+});
+
+API.interceptors.request.use(config => {
+  const token = localStorage.getItem('token');
+  console.log('=== VISUALIZATION REQUEST DEBUG ===');
+  console.log('Full URL:', `${config.baseURL}${config.url}`);
+  console.log('Method:', config.method);
+  console.log('Token exists:', !!token);
+  
+  if (token) config.headers.Authorization = `Bearer ${token}`;
+  return config;
+});
+
+API.interceptors.response.use(
+  response => {
+    console.log('=== VISUALIZATION RESPONSE SUCCESS ===');
+    console.log('Status:', response.status);
+    console.log('Data:', response.data);
+    return response;
+  },
+  error => {
+    console.log('=== VISUALIZATION RESPONSE ERROR ===');
+    console.log('Error type:', error.code);
+    console.log('Error message:', error.message);
+    console.log('Response status:', error.response?.status);
+    console.log('Response data:', error.response?.data);
+    console.log('Full error:', error);
+    return Promise.reject(error);
+  }
+);
 
 const BudgetInsights = () => {
   const navigate = useNavigate();
@@ -23,16 +57,38 @@ const BudgetInsights = () => {
     try {
       setLoading(true);
       
+      // Debug token
+      const token = localStorage.getItem('token');
+      console.log('🔑 Token exists:', !!token);
+      console.log('🔑 Token preview:', token ? token.substring(0, 20) + '...' : 'No token');
+      
+      console.log('📡 Making API calls to:');
+      console.log('  - /api/visualization/data');
+      console.log('  - /api/visualization/budget-performance');
+      
       const [visualResponse, performanceResponse] = await Promise.all([
-        api.get('/visualization/data'),
-        api.get('/visualization/budget-performance')
+        API.get('/api/visualization/data'),
+        API.get('/api/visualization/budget-performance')
       ]);
+
+      console.log('✅ Visualization response:', visualResponse.data);
+      console.log('✅ Performance response:', performanceResponse.data);
 
       setVisualizationData(visualResponse.data);
       setBudgetPerformance(performanceResponse.data);
       setError(null);
     } catch (err) {
-      console.error('Error fetching visualization data:', err);
+      console.error('❌ Error details:', {
+        message: err.message,
+        status: err.response?.status,
+        statusText: err.response?.statusText,
+        data: err.response?.data,
+        config: {
+          url: err.config?.url,
+          method: err.config?.method,
+          headers: err.config?.headers
+        }
+      });
       setError('Failed to load visualization data. Please try again.');
     } finally {
       setLoading(false);
