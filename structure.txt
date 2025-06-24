@@ -8,19 +8,17 @@
 ├── Sprint 2 Tests
 │   ├── charts.system.test.js
 │   ├── csv.system.test.js
-│   ├── csv.test.js
-│   ├── manageusers.system.test.js
-│   └── manageusers.test.js
+│   └── manageusers.system.test.js
 ├── Sprint 3 Tests
 ├── Sprint 4 Tests
 ├── client
-│   ├── SummaryChart.test.js
 │   ├── package-lock.json
 │   ├── package.json
 │   ├── public
 │   │   └── index.html
 │   └── src
 │       ├── App.jsx
+│       ├── SummaryChart.test.jsx
 │       ├── components
 │       │   ├── ExpenseForm.jsx
 │       │   └── SummaryChart.jsx
@@ -30,6 +28,7 @@
 │       ├── pages
 │       │   ├── Budget.jsx
 │       │   ├── BudgetInsights.jsx
+│       │   ├── BudgetInsights.test.js
 │       │   ├── Dashboard.jsx
 │       │   ├── Login.jsx
 │       │   └── Signup.jsx
@@ -60,9 +59,12 @@
 │   ├── controllers
 │   │   ├── budgetsController.js
 │   │   ├── expensesController
+│   │   ├── reportsController.js
 │   │   ├── usersController
 │   │   └── visualizationController.js
+│   ├── csv.test.js
 │   ├── db.js
+│   ├── manageusers.test.js
 │   ├── middleware
 │   │   ├── auth.js
 │   │   └── logger.js
@@ -71,10 +73,11 @@
 │   ├── routes
 │   │   ├── budgets.js
 │   │   ├── expenses.js
+│   │   ├── reports.js
 │   │   ├── users.js
 │   │   └── visualization.js
 │   ├── server.js
 │   └── signup-log.txt
 └── structure.txt
 
-16 directories, 61 files
+16 directories, 64 files

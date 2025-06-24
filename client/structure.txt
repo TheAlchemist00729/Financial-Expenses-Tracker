@@ -1,0 +1,29 @@
+.
+├── package-lock.json
+├── package.json
+├── public
+│   └── index.html
+├── src
+│   ├── App.jsx
+│   ├── BudgetInsights.test.js
+│   ├── SummaryChart.test.jsx
+│   ├── components
+│   │   ├── ExpenseForm.jsx
+│   │   └── SummaryChart.jsx
+│   ├── index.jsx
+│   ├── logout.system.test.js
+│   ├── logout.test.js
+│   ├── pages
+│   │   ├── Budget.jsx
+│   │   ├── BudgetInsights.jsx
+│   │   ├── Dashboard.jsx
+│   │   ├── Login.jsx
+│   │   └── Signup.jsx
+│   └── services
+│       ├── api.js
+│       ├── auth.js
+│       ├── budgets.js
+│       └── expenses.js
+└── structure.txt
+
+5 directories, 21 files
