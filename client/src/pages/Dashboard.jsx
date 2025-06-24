@@ -13,12 +13,20 @@ export default function Dashboard({ user, onLogout }) {
   const [loading, setLoading] = useState(false);
   const [deletingId, setDeletingId] = useState(null);
   const [adding, setAdding] = useState(false);
+  
   const [showUserModal, setShowUserModal] = useState(false);
+  const [userModalView, setUserModalView] = useState('menu'); // 'menu', 'password', 'username'
+  
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [userError, setUserError] = useState('');
   const [updatingPassword, setUpdatingPassword] = useState(false);
+  
+  const [newUsername, setNewUsername] = useState('');
+  const [passwordForUsername, setPasswordForUsername] = useState('');
+  const [updatingUsername, setUpdatingUsername] = useState(false);
+  
+  const [userError, setUserError] = useState('');
   const navigate = useNavigate();
 
   const loadData = async () => {
@@ -118,7 +126,6 @@ export default function Dashboard({ user, onLogout }) {
       const category = expense.category || '';
       let description = expense.description || '';
       
-      // Escape quotes and commas in description
       if (description && (description.includes(',') || description.includes('"') || description.includes('\n'))) {
         description = `"${description.replace(/"/g, '""')}"`;
       }
@@ -262,6 +269,17 @@ export default function Dashboard({ user, onLogout }) {
     downloadCSV(csvContent, filename);
   };
 
+  const resetUserModal = () => {
+    setShowUserModal(false);
+    setUserModalView('menu');
+    setUserError('');
+    setCurrentPassword('');
+    setNewPassword('');
+    setConfirmPassword('');
+    setNewUsername('');
+    setPasswordForUsername('');
+  };
+
   const handlePasswordChange = async (e) => {
     e.preventDefault();
     setUserError('');
@@ -295,11 +313,8 @@ export default function Dashboard({ user, onLogout }) {
         throw new Error(errorData.error || 'Password change failed');
       }
       
-      // Reset form
-      setCurrentPassword('');
-      setNewPassword('');
-      setConfirmPassword('');
-      setShowUserModal(false);
+      // Reset form and show success
+      resetUserModal();
       setError('Password updated successfully!');
       
     } catch (err) {
@@ -307,6 +322,54 @@ export default function Dashboard({ user, onLogout }) {
       setUserError(err.message || 'Password change failed');
     } finally {
       setUpdatingPassword(false);
+    }
+  };
+
+  const handleUsernameChange = async (e) => {
+    e.preventDefault();
+    setUserError('');
+    
+    if (!newUsername.trim()) {
+      setUserError('Username cannot be empty');
+      return;
+    }
+    
+    if (newUsername.length < 3) {
+      setUserError('Username must be at least 3 characters long');
+      return;
+    }
+    
+    setUpdatingUsername(true);
+    try {
+      const response = await fetch('/api/auth/change-username', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify({
+          newUsername: newUsername.trim(),
+          password: passwordForUsername
+        })
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Username change failed');
+      }
+      
+      // Reset form and show success
+      resetUserModal();
+      setError('Username updated successfully!');
+      
+      // Optionally update the user object if you have a callback
+      // This would depend on how your user state is managed
+      
+    } catch (err) {
+      console.error('Username change error:', err);
+      setUserError(err.message || 'Username change failed');
+    } finally {
+      setUpdatingUsername(false);
     }
   };
 
@@ -319,13 +382,16 @@ export default function Dashboard({ user, onLogout }) {
   };
 
   const handleLogout = () => {
+    // Clear any stored authentication data
     localStorage.removeItem('token');
     localStorage.removeItem('userId');
     
+    // Call the logout callback if provided
     if (onLogout) {
       onLogout();
     }
     
+    // Navigate to login page
     navigate('/login');
   };
 
@@ -433,15 +499,13 @@ export default function Dashboard({ user, onLogout }) {
           boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)'
         }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-            <h2 style={{ margin: 0 }}>User Management</h2>
+            <h2 style={{ margin: 0 }}>
+              {userModalView === 'menu' && 'Account Management'}
+              {userModalView === 'password' && 'Change Password'}
+              {userModalView === 'username' && 'Change Username'}
+            </h2>
             <button
-              onClick={() => {
-                setShowUserModal(false);
-                setUserError('');
-                setCurrentPassword('');
-                setNewPassword('');
-                setConfirmPassword('');
-              }}
+              onClick={resetUserModal}
               style={{
                 background: 'none',
                 border: 'none',
@@ -454,118 +518,257 @@ export default function Dashboard({ user, onLogout }) {
             </button>
           </div>
 
-          <form onSubmit={handlePasswordChange}>
-            <div style={{ marginBottom: '1rem' }}>
-              <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold' }}>
-                Current Password:
-              </label>
-              <input
-                type="password"
-                value={currentPassword}
-                onChange={(e) => setCurrentPassword(e.target.value)}
-                required
-                style={{
-                  width: '100%',
-                  padding: '0.5rem',
-                  border: '1px solid #ddd',
-                  borderRadius: '4px',
-                  fontSize: '1rem'
-                }}
-              />
-            </div>
-
-            <div style={{ marginBottom: '1rem' }}>
-              <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold' }}>
-                New Password:
-              </label>
-              <input
-                type="password"
-                value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)}
-                required
-                minLength={6}
-                style={{
-                  width: '100%',
-                  padding: '0.5rem',
-                  border: '1px solid #ddd',
-                  borderRadius: '4px',
-                  fontSize: '1rem'
-                }}
-              />
-            </div>
-
-            <div style={{ marginBottom: '1rem' }}>
-              <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold' }}>
-                Confirm New Password:
-              </label>
-              <input
-                type="password"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                required
-                minLength={6}
-                style={{
-                  width: '100%',
-                  padding: '0.5rem',
-                  border: '1px solid #ddd',
-                  borderRadius: '4px',
-                  fontSize: '1rem'
-                }}
-              />
-            </div>
-
-            {userError && (
-              <div style={{
-                color: '#721c24',
-                backgroundColor: '#f8d7da',
-                border: '1px solid #f5c6cb',
-                padding: '0.75rem',
-                borderRadius: '4px',
-                marginBottom: '1rem',
-                fontSize: '0.875rem'
+          {userModalView === 'menu' && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              <div style={{ 
+                padding: '1rem', 
+                backgroundColor: '#f8f9fa', 
+                borderRadius: '6px',
+                marginBottom: '1rem'
               }}>
-                {userError}
+                <div style={{ fontWeight: 'bold', marginBottom: '0.5rem' }}>Current Account:</div>
+                <div style={{ color: '#666' }}>
+                  {user?.username && <div>Username: {user.username}</div>}
+                  {user?.email && <div>Email: {user.email}</div>}
+                </div>
               </div>
-            )}
-
-            <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
+              
               <button
-                type="button"
-                onClick={() => {
-                  setShowUserModal(false);
-                  setUserError('');
-                  setCurrentPassword('');
-                  setNewPassword('');
-                  setConfirmPassword('');
-                }}
-                style={{
-                  backgroundColor: '#6c757d',
-                  color: 'white',
-                  border: 'none',
-                  padding: '0.5rem 1rem',
-                  borderRadius: '4px',
-                  cursor: 'pointer'
-                }}
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                disabled={updatingPassword}
+                onClick={() => setUserModalView('password')}
                 style={{
                   backgroundColor: '#007bff',
                   color: 'white',
                   border: 'none',
-                  padding: '0.5rem 1rem',
+                  padding: '0.75rem 1rem',
                   borderRadius: '4px',
-                  cursor: updatingPassword ? 'not-allowed' : 'pointer',
-                  opacity: updatingPassword ? 0.6 : 1
+                  cursor: 'pointer',
+                  fontSize: '1rem',
+                  fontWeight: 'bold'
                 }}
               >
-                {updatingPassword ? 'Updating...' : 'Update Password'}
+                🔒 Change Password
+              </button>
+              
+              <button
+                onClick={() => setUserModalView('username')}
+                style={{
+                  backgroundColor: '#28a745',
+                  color: 'white',
+                  border: 'none',
+                  padding: '0.75rem 1rem',
+                  borderRadius: '4px',
+                  cursor: 'pointer',
+                  fontSize: '1rem',
+                  fontWeight: 'bold'
+                }}
+              >
+                👤 Change Username
               </button>
             </div>
-          </form>
+          )}
+
+          {userModalView === 'password' && (
+            <form onSubmit={handlePasswordChange}>
+              <div style={{ marginBottom: '1rem' }}>
+                <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold' }}>
+                  Current Password:
+                </label>
+                <input
+                  type="password"
+                  value={currentPassword}
+                  onChange={(e) => setCurrentPassword(e.target.value)}
+                  required
+                  style={{
+                    width: '100%',
+                    padding: '0.5rem',
+                    border: '1px solid #ddd',
+                    borderRadius: '4px',
+                    fontSize: '1rem'
+                  }}
+                />
+              </div>
+
+              <div style={{ marginBottom: '1rem' }}>
+                <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold' }}>
+                  New Password:
+                </label>
+                <input
+                  type="password"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  required
+                  minLength={6}
+                  style={{
+                    width: '100%',
+                    padding: '0.5rem',
+                    border: '1px solid #ddd',
+                    borderRadius: '4px',
+                    fontSize: '1rem'
+                  }}
+                />
+              </div>
+
+              <div style={{ marginBottom: '1rem' }}>
+                <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold' }}>
+                  Confirm New Password:
+                </label>
+                <input
+                  type="password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  required
+                  minLength={6}
+                  style={{
+                    width: '100%',
+                    padding: '0.5rem',
+                    border: '1px solid #ddd',
+                    borderRadius: '4px',
+                    fontSize: '1rem'
+                  }}
+                />
+              </div>
+
+              {userError && (
+                <div style={{
+                  color: '#721c24',
+                  backgroundColor: '#f8d7da',
+                  border: '1px solid #f5c6cb',
+                  padding: '0.75rem',
+                  borderRadius: '4px',
+                  marginBottom: '1rem',
+                  fontSize: '0.875rem'
+                }}>
+                  {userError}
+                </div>
+              )}
+
+              <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
+                <button
+                  type="button"
+                  onClick={() => setUserModalView('menu')}
+                  style={{
+                    backgroundColor: '#6c757d',
+                    color: 'white',
+                    border: 'none',
+                    padding: '0.5rem 1rem',
+                    borderRadius: '4px',
+                    cursor: 'pointer'
+                  }}
+                >
+                  Back
+                </button>
+                <button
+                  type="submit"
+                  disabled={updatingPassword}
+                  style={{
+                    backgroundColor: '#007bff',
+                    color: 'white',
+                    border: 'none',
+                    padding: '0.5rem 1rem',
+                    borderRadius: '4px',
+                    cursor: updatingPassword ? 'not-allowed' : 'pointer',
+                    opacity: updatingPassword ? 0.6 : 1
+                  }}
+                >
+                  {updatingPassword ? 'Updating...' : 'Update Password'}
+                </button>
+              </div>
+            </form>
+          )}
+
+          {userModalView === 'username' && (
+            <form onSubmit={handleUsernameChange}>
+              <div style={{ marginBottom: '1rem' }}>
+                <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold' }}>
+                  New Username:
+                </label>
+                <input
+                  type="text"
+                  value={newUsername}
+                  onChange={(e) => setNewUsername(e.target.value)}
+                  required
+                  minLength={3}
+                  placeholder={user?.username || 'Enter new username'}
+                  style={{
+                    width: '100%',
+                    padding: '0.5rem',
+                    border: '1px solid #ddd',
+                    borderRadius: '4px',
+                    fontSize: '1rem'
+                  }}
+                />
+              </div>
+
+              <div style={{ marginBottom: '1rem' }}>
+                <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold' }}>
+                  Confirm Password:
+                </label>
+                <input
+                  type="password"
+                  value={passwordForUsername}
+                  onChange={(e) => setPasswordForUsername(e.target.value)}
+                  required
+                  placeholder="Enter your current password"
+                  style={{
+                    width: '100%',
+                    padding: '0.5rem',
+                    border: '1px solid #ddd',
+                    borderRadius: '4px',
+                    fontSize: '1rem'
+                  }}
+                />
+                <div style={{ fontSize: '0.75rem', color: '#666', marginTop: '0.25rem' }}>
+                  Password required for security verification
+                </div>
+              </div>
+
+              {userError && (
+                <div style={{
+                  color: '#721c24',
+                  backgroundColor: '#f8d7da',
+                  border: '1px solid #f5c6cb',
+                  padding: '0.75rem',
+                  borderRadius: '4px',
+                  marginBottom: '1rem',
+                  fontSize: '0.875rem'
+                }}>
+                  {userError}
+                </div>
+              )}
+
+              <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
+                <button
+                  type="button"
+                  onClick={() => setUserModalView('menu')}
+                  style={{
+                    backgroundColor: '#6c757d',
+                    color: 'white',
+                    border: 'none',
+                    padding: '0.5rem 1rem',
+                    borderRadius: '4px',
+                    cursor: 'pointer'
+                  }}
+                >
+                  Back
+                </button>
+                <button
+                  type="submit"
+                  disabled={updatingUsername}
+                  style={{
+                    backgroundColor: '#28a745',
+                    color: 'white',
+                    border: 'none',
+                    padding: '0.5rem 1rem',
+                    borderRadius: '4px',
+                    cursor: updatingUsername ? 'not-allowed' : 'pointer',
+                    opacity: updatingUsername ? 0.6 : 1
+                  }}
+                >
+                  {updatingUsername ? 'Updating...' : 'Update Username'}
+                </button>
+              </div>
+            </form>
+          )}
         </div>
       </div>
     );
@@ -676,7 +879,7 @@ export default function Dashboard({ user, onLogout }) {
         flexWrap: 'wrap',
         padding: '1rem',
         backgroundColor: '#f8f9fa',
-        borderRadius: '8px',
+        borderRadius:'8px',
         border: '1px solid #dee2e6'
       }}>
         <h3 style={{ width: '100%', textAlign: 'center', margin: '0 0 1rem 0', fontSize: '1.1rem' }}>
