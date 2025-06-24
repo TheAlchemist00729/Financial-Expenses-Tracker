@@ -18,3 +18,43 @@ export const login = async (data) => {
   console.log('→ Payload:', data);
   return API.post('/login', data);
 };
+
+export const isLoggedIn = () => {
+  const token = localStorage.getItem('token');
+  return !!token;
+};
+
+export const getToken = () => {
+  return localStorage.getItem('token');
+};
+ 
+export const getUserId = () => {
+  return localStorage.getItem('userId');
+};
+
+export const clearAuthData = () => {
+  localStorage.removeItem('token');
+  localStorage.removeItem('userId');
+  localStorage.removeItem('userEmail');
+  localStorage.removeItem('refreshToken');
+};
+
+export const logout = async (navigate) => {
+  try {
+    
+    clearAuthData();
+    
+    if (navigate) {
+      navigate('/login');
+    }
+    
+    console.log('→ User logged out successfully');
+  } catch (error) {
+    console.error('Logout error:', error);
+    // Still clear data even if API call fails
+    clearAuthData();
+    if (navigate) {
+      navigate('/login');
+    }
+  }
+};
