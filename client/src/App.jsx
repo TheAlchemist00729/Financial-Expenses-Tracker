@@ -5,6 +5,7 @@ import Login from './pages/Login';
 import Signup from './pages/Signup';
 import Dashboard from './pages/Dashboard';
 import Budget from './pages/Budget';
+import BudgetInsights from './pages/BudgetInsights'; // Add this import
 
 export default function App() {
   const [user, setUser] = useState(null);
@@ -44,6 +45,17 @@ export default function App() {
             )
           }
         />
+        {/* ADD THIS NEW ROUTE */}
+        <Route
+          path="/insights"
+          element={
+            user ? (
+              <BudgetInsights user={user} />
+            ) : (
+              <Navigate to="/login" replace />
+            )
+          }
+        />
         <Route
           path="*"
           element={<Navigate to="/login" replace />}
@@ -52,4 +64,3 @@ export default function App() {
     </Router>
   );
 }
-

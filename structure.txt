@@ -5,28 +5,39 @@
 │   ├── product_backlog.md
 │   ├── quality_attributes.md
 │   └── sprint_1_backlog.md
+├── Sprint 2 Tests
+│   ├── charts.system.test.js
+│   ├── csv.system.test.js
+│   ├── csv.test.js
+│   ├── manageusers.system.test.js
+│   └── manageusers.test.js
+├── Sprint 3 Tests
+├── Sprint 4 Tests
 ├── client
+│   ├── SummaryChart.test.js
 │   ├── package-lock.json
 │   ├── package.json
 │   ├── public
 │   │   └── index.html
-│   ├── src
-│   │   ├── App.jsx
-│   │   ├── components
-│   │   │   ├── ExpenseForm.jsx
-│   │   │   └── SummaryChart.jsx
-│   │   ├── index.jsx
-│   │   ├── pages
-│   │   │   ├── Budget.jsx
-│   │   │   ├── Dashboard.jsx
-│   │   │   ├── Login.jsx
-│   │   │   └── Signup.jsx
-│   │   └── services
-│   │       ├── api.js
-│   │       ├── auth.js
-│   │       ├── budgets.js
-│   │       └── expenses.js
-│   └── testsfrontend
+│   └── src
+│       ├── App.jsx
+│       ├── components
+│       │   ├── ExpenseForm.jsx
+│       │   └── SummaryChart.jsx
+│       ├── index.jsx
+│       ├── logout.system.test.js
+│       ├── logout.test.js
+│       ├── pages
+│       │   ├── Budget.jsx
+│       │   ├── BudgetInsights.jsx
+│       │   ├── Dashboard.jsx
+│       │   ├── Login.jsx
+│       │   └── Signup.jsx
+│       └── services
+│           ├── api.js
+│           ├── auth.js
+│           ├── budgets.js
+│           └── expenses.js
 ├── database
 │   ├── budgets.sql
 │   ├── queries.sql
@@ -35,11 +46,22 @@
 ├── package-lock.json
 ├── package.json
 ├── server
+│   ├── Sprint 1 Tests
+│   │   ├── budgets.system.test.js
+│   │   ├── budgets.test.js
+│   │   ├── expenses.delete.test.js
+│   │   ├── expenses.get.system.test.js
+│   │   ├── expenses.get.test.js
+│   │   ├── expenses.system.test.js
+│   │   ├── expenses.test.js
+│   │   ├── users.system.test.js
+│   │   └── users.test.js
 │   ├── app.js
 │   ├── controllers
 │   │   ├── budgetsController.js
 │   │   ├── expensesController
-│   │   └── usersController
+│   │   ├── usersController
+│   │   └── visualizationController.js
 │   ├── db.js
 │   ├── middleware
 │   │   ├── auth.js
@@ -49,20 +71,10 @@
 │   ├── routes
 │   │   ├── budgets.js
 │   │   ├── expenses.js
-│   │   └── users.js
+│   │   ├── users.js
+│   │   └── visualization.js
 │   ├── server.js
-│   ├── signup-log.txt
-│   └── testsbackend
-│       ├── budgets.system.test.js
-│       ├── budgets.test.js
-│       ├── expenses.delete.test.js
-│       ├── expenses.get.system.test.js
-│       ├── expenses.get.test.js
-│       ├── expenses.system.test.js
-│       ├── expenses.test.js
-│       ├── users.system.test.js
-│       └── users.test.js
-├── structure.txt
-└── testsroot
+│   └── signup-log.txt
+└── structure.txt
 
-13 directories, 52 files
+16 directories, 61 files

@@ -63,12 +63,12 @@ const BudgetInsights = () => {
       console.log('🔑 Token preview:', token ? token.substring(0, 20) + '...' : 'No token');
       
       console.log('📡 Making API calls to:');
-      console.log('  - /api/visualization/data');
-      console.log('  - /api/visualization/budget-performance');
+      console.log('  - /visualization/data');
+      console.log('  - /visualization/budget-performance');
       
       const [visualResponse, performanceResponse] = await Promise.all([
-        API.get('/api/visualization/data'),
-        API.get('/api/visualization/budget-performance')
+        API.get('/visualization/data'),
+        API.get('/visualization/budget-performance')
       ]);
 
       console.log('✅ Visualization response:', visualResponse.data);
