@@ -13,6 +13,12 @@ export default function Dashboard({ user, onLogout }) {
   const [loading, setLoading] = useState(false);
   const [deletingId, setDeletingId] = useState(null);
   const [adding, setAdding] = useState(false);
+  const [showUserModal, setShowUserModal] = useState(false);
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [userError, setUserError] = useState('');
+  const [updatingPassword, setUpdatingPassword] = useState(false);
   const navigate = useNavigate();
 
   const loadData = async () => {
@@ -86,6 +92,224 @@ export default function Dashboard({ user, onLogout }) {
     }
   };
 
+  const convertToCSV = (data, type = 'expenses') => {
+    if (!data || data.length === 0) {
+      if (type === 'budgets') {
+        return 'Category,Budget Amount,Spent Amount,Remaining\n';
+      }
+      return 'Date,Category,Description,Amount\n';
+    }
+    
+    if (type === 'budgets') {
+      const headers = 'Category,Budget Amount,Spent Amount,Remaining\n';
+      const rows = data.map(budget => {
+        const category = budget.category || '';
+        const budgetAmount = budget.amount || 0;
+        const spentAmount = budget.spent_amount || budget.spent || 0;
+        const remaining = budgetAmount - spentAmount;
+        return `${category},${budgetAmount},${spentAmount},${remaining}`;
+      }).join('\n');
+      return headers + rows;
+    }
+    
+    const headers = 'Date,Category,Description,Amount\n';
+    const rows = data.map(expense => {
+      const date = expense.date || '';
+      const category = expense.category || '';
+      let description = expense.description || '';
+      
+      // Escape quotes and commas in description
+      if (description && (description.includes(',') || description.includes('"') || description.includes('\n'))) {
+        description = `"${description.replace(/"/g, '""')}"`;
+      }
+      
+      const amount = expense.amount || '';
+      return `${date},${category},${description},${amount}`;
+    }).join('\n');
+    
+    return headers + rows;
+  };
+
+  const downloadCSV = (csvContent, filename) => {
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', filename);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
+  const handleExportExpenses = async () => {
+    if (!expenses.length) {
+      setError('No expenses to export');
+      return;
+    }
+
+    try {
+      const response = await fetch('/api/reports/expenses/csv', {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+
+      if (response.ok) {
+        const csvContent = await response.text();
+        const filename = `expenses_${new Date().toISOString().split('T')[0]}.csv`;
+        downloadCSV(csvContent, filename);
+        return;
+      }
+    } catch (err) {
+      console.warn('Backend CSV endpoint not available, using frontend generation');
+    }
+
+    const csvContent = convertToCSV(expenses, 'expenses');
+    const filename = `expenses_${new Date().toISOString().split('T')[0]}.csv`;
+    downloadCSV(csvContent, filename);
+  };
+
+  const handleExportBudgets = async () => {
+    if (!budgetStatus.length) {
+      setError('No budgets to export');
+      return;
+    }
+
+    try {
+      const response = await fetch('/api/reports/budgets/csv', {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+
+      if (response.ok) {
+        const csvContent = await response.text();
+        const filename = `budgets_${new Date().toISOString().split('T')[0]}.csv`;
+        downloadCSV(csvContent, filename);
+        return;
+      }
+    } catch (err) {
+      console.warn('Backend CSV endpoint not available, using frontend generation');
+    }
+
+    const csvContent = convertToCSV(budgetStatus, 'budgets');
+    const filename = `budgets_${new Date().toISOString().split('T')[0]}.csv`;
+    downloadCSV(csvContent, filename);
+  };
+
+  const handleExportAll = async () => {
+    try {
+      const response = await fetch('/api/reports/comprehensive', {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+
+      if (response.ok) {
+        const csvContent = await response.text();
+        const filename = `financial_report_${new Date().toISOString().split('T')[0]}.csv`;
+        downloadCSV(csvContent, filename);
+        return;
+      }
+    } catch (err) {
+      console.warn('Backend comprehensive report not available, using frontend generation');
+    }
+
+    const reportData = [];
+    
+    reportData.push('FINANCIAL SUMMARY REPORT');
+    reportData.push(`Generated on: ${new Date().toLocaleString()}`);
+    reportData.push(`User: ${user?.email || user?.username || 'Unknown'}`);
+    reportData.push('');
+    
+    if (budgetStatus.length > 0) {
+      reportData.push('BUDGET SUMMARY');
+      reportData.push('Category,Budget Amount,Spent Amount,Remaining');
+      budgetStatus.forEach(budget => {
+        const category = budget.category || '';
+        const budgetAmount = budget.amount || 0;
+        const spentAmount = budget.spent_amount || budget.spent || 0;
+        const remaining = budgetAmount - spentAmount;
+        reportData.push(`${category},${budgetAmount},${spentAmount},${remaining}`);
+      });
+      reportData.push('');
+    }
+    
+    if (expenses.length > 0) {
+      reportData.push('EXPENSES DETAIL');
+      reportData.push('Date,Category,Description,Amount');
+      expenses.forEach(expense => {
+        const date = expense.date || '';
+        const category = expense.category || '';
+        let description = expense.description || '';
+        
+        if (description && (description.includes(',') || description.includes('"') || description.includes('\n'))) {
+          description = `"${description.replace(/"/g, '""')}"`;
+        }
+        
+        const amount = expense.amount || '';
+        reportData.push(`${date},${category},${description},${amount}`);
+      });
+    }
+    
+    const csvContent = reportData.join('\n');
+    const filename = `financial_report_${new Date().toISOString().split('T')[0]}.csv`;
+    downloadCSV(csvContent, filename);
+  };
+
+  const handlePasswordChange = async (e) => {
+    e.preventDefault();
+    setUserError('');
+    
+    if (newPassword !== confirmPassword) {
+      setUserError('New passwords do not match');
+      return;
+    }
+    
+    if (newPassword.length < 6) {
+      setUserError('Password must be at least 6 characters long');
+      return;
+    }
+    
+    setUpdatingPassword(true);
+    try {
+      const response = await fetch('/api/auth/change-password', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify({
+          currentPassword,
+          newPassword
+        })
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Password change failed');
+      }
+      
+      // Reset form
+      setCurrentPassword('');
+      setNewPassword('');
+      setConfirmPassword('');
+      setShowUserModal(false);
+      setError('Password updated successfully!');
+      
+    } catch (err) {
+      console.error('Password change error:', err);
+      setUserError(err.message || 'Password change failed');
+    } finally {
+      setUpdatingPassword(false);
+    }
+  };
+
   const handleCreateBudgets = () => {
     navigate('/budgets');
   };
@@ -95,16 +319,13 @@ export default function Dashboard({ user, onLogout }) {
   };
 
   const handleLogout = () => {
-    // Clear any stored authentication data
     localStorage.removeItem('token');
     localStorage.removeItem('userId');
     
-    // Call the logout callback if provided
     if (onLogout) {
       onLogout();
     }
     
-    // Navigate to login page
     navigate('/login');
   };
 
@@ -187,9 +408,172 @@ export default function Dashboard({ user, onLogout }) {
     );
   };
 
+  const renderUserModal = () => {
+    if (!showUserModal) return null;
+
+    return (
+      <div style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        zIndex: 1000
+      }}>
+        <div style={{
+          backgroundColor: 'white',
+          padding: '2rem',
+          borderRadius: '8px',
+          width: '90%',
+          maxWidth: '400px',
+          boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)'
+        }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+            <h2 style={{ margin: 0 }}>User Management</h2>
+            <button
+              onClick={() => {
+                setShowUserModal(false);
+                setUserError('');
+                setCurrentPassword('');
+                setNewPassword('');
+                setConfirmPassword('');
+              }}
+              style={{
+                background: 'none',
+                border: 'none',
+                fontSize: '1.5rem',
+                cursor: 'pointer',
+                color: '#666'
+              }}
+            >
+              ×
+            </button>
+          </div>
+
+          <form onSubmit={handlePasswordChange}>
+            <div style={{ marginBottom: '1rem' }}>
+              <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold' }}>
+                Current Password:
+              </label>
+              <input
+                type="password"
+                value={currentPassword}
+                onChange={(e) => setCurrentPassword(e.target.value)}
+                required
+                style={{
+                  width: '100%',
+                  padding: '0.5rem',
+                  border: '1px solid #ddd',
+                  borderRadius: '4px',
+                  fontSize: '1rem'
+                }}
+              />
+            </div>
+
+            <div style={{ marginBottom: '1rem' }}>
+              <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold' }}>
+                New Password:
+              </label>
+              <input
+                type="password"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                required
+                minLength={6}
+                style={{
+                  width: '100%',
+                  padding: '0.5rem',
+                  border: '1px solid #ddd',
+                  borderRadius: '4px',
+                  fontSize: '1rem'
+                }}
+              />
+            </div>
+
+            <div style={{ marginBottom: '1rem' }}>
+              <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold' }}>
+                Confirm New Password:
+              </label>
+              <input
+                type="password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                required
+                minLength={6}
+                style={{
+                  width: '100%',
+                  padding: '0.5rem',
+                  border: '1px solid #ddd',
+                  borderRadius: '4px',
+                  fontSize: '1rem'
+                }}
+              />
+            </div>
+
+            {userError && (
+              <div style={{
+                color: '#721c24',
+                backgroundColor: '#f8d7da',
+                border: '1px solid #f5c6cb',
+                padding: '0.75rem',
+                borderRadius: '4px',
+                marginBottom: '1rem',
+                fontSize: '0.875rem'
+              }}>
+                {userError}
+              </div>
+            )}
+
+            <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
+              <button
+                type="button"
+                onClick={() => {
+                  setShowUserModal(false);
+                  setUserError('');
+                  setCurrentPassword('');
+                  setNewPassword('');
+                  setConfirmPassword('');
+                }}
+                style={{
+                  backgroundColor: '#6c757d',
+                  color: 'white',
+                  border: 'none',
+                  padding: '0.5rem 1rem',
+                  borderRadius: '4px',
+                  cursor: 'pointer'
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={updatingPassword}
+                style={{
+                  backgroundColor: '#007bff',
+                  color: 'white',
+                  border: 'none',
+                  padding: '0.5rem 1rem',
+                  borderRadius: '4px',
+                  cursor: updatingPassword ? 'not-allowed' : 'pointer',
+                  opacity: updatingPassword ? 0.6 : 1
+                }}
+              >
+                {updatingPassword ? 'Updating...' : 'Update Password'}
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div style={{ maxWidth: 600, margin: '2rem auto', padding: '1rem' }}>
-      {/* Header with user info and logout */}
+      {/* Header with user info and controls */}
       <div style={{ 
         display: 'flex', 
         justifyContent: 'space-between', 
@@ -208,24 +592,38 @@ export default function Dashboard({ user, onLogout }) {
             </p>
           )}
         </div>
-        <button
-          onClick={handleLogout}
-          style={{
-            backgroundColor: '#dc3545',
-            color: 'white',
-            border: 'none',
-            padding: '0.5rem 1rem',
-            borderRadius: '4px',
-            cursor: 'pointer',
-            fontSize: '0.875rem',
-            fontWeight: 'bold',
-            transition: 'background-color 0.2s'
-          }}
-          onMouseOver={(e) => e.target.style.backgroundColor = '#c82333'}
-          onMouseOut={(e) => e.target.style.backgroundColor = '#dc3545'}
-        >
-          Logout
-        </button>
+        <div style={{ display: 'flex', gap: '0.5rem' }}>
+          <button
+            onClick={() => setShowUserModal(true)}
+            style={{
+              backgroundColor: '#17a2b8',
+              color: 'white',
+              border: 'none',
+              padding: '0.5rem 1rem',
+              borderRadius: '4px',
+              cursor: 'pointer',
+              fontSize: '0.875rem',
+              fontWeight: 'bold'
+            }}
+          >
+            👤 Account
+          </button>
+          <button
+            onClick={handleLogout}
+            style={{
+              backgroundColor: '#dc3545',
+              color: 'white',
+              border: 'none',
+              padding: '0.5rem 1rem',
+              borderRadius: '4px',
+              cursor: 'pointer',
+              fontSize: '0.875rem',
+              fontWeight: 'bold'
+            }}
+          >
+            Logout
+          </button>
+        </div>
       </div>
 
       {/* Action buttons */}
@@ -246,11 +644,8 @@ export default function Dashboard({ user, onLogout }) {
             borderRadius: '4px',
             cursor: 'pointer',
             fontSize: '1rem',
-            fontWeight: 'bold',
-            transition: 'background-color 0.2s'
+            fontWeight: 'bold'
           }}
-          onMouseOver={(e) => e.target.style.backgroundColor = '#218838'}
-          onMouseOut={(e) => e.target.style.backgroundColor = '#28a745'}
         >
           📊 Manage Budgets
         </button>
@@ -265,21 +660,85 @@ export default function Dashboard({ user, onLogout }) {
             borderRadius: '4px',
             cursor: 'pointer',
             fontSize: '1rem',
-            fontWeight: 'bold',
-            transition: 'background-color 0.2s'
+            fontWeight: 'bold'
           }}
-          onMouseOver={(e) => e.target.style.backgroundColor = '#0056b3'}
-          onMouseOut={(e) => e.target.style.backgroundColor = '#007bff'}
         >
           📈 Budget Insights
         </button>
       </div>
 
+      {/* Export buttons */}
+      <div style={{
+        display: 'flex',
+        gap: '0.5rem',
+        marginBottom: '1.5rem',
+        justifyContent: 'center',
+        flexWrap: 'wrap',
+        padding: '1rem',
+        backgroundColor: '#f8f9fa',
+        borderRadius: '8px',
+        border: '1px solid #dee2e6'
+      }}>
+        <h3 style={{ width: '100%', textAlign: 'center', margin: '0 0 1rem 0', fontSize: '1.1rem' }}>
+          📥 Export Data
+        </h3>
+        <button
+          onClick={handleExportExpenses}
+          disabled={!expenses.length}
+          style={{
+            backgroundColor: expenses.length ? '#6f42c1' : '#6c757d',
+            color: 'white',
+            border: 'none',
+            padding: '0.5rem 1rem',
+            borderRadius: '4px',
+            cursor: expenses.length ? 'pointer' : 'not-allowed',
+            fontSize: '0.875rem',
+            fontWeight: 'bold'
+          }}
+        >
+          📊 Export Expenses
+        </button>
+        
+        <button
+          onClick={handleExportBudgets}
+          disabled={!budgetStatus.length}
+          style={{
+            backgroundColor: budgetStatus.length ? '#fd7e14' : '#6c757d',
+            color: 'white',
+            border: 'none',
+            padding: '0.5rem 1rem',
+            borderRadius: '4px',
+            cursor: budgetStatus.length ? 'pointer' : 'not-allowed',
+            fontSize: '0.875rem',
+            fontWeight: 'bold'
+          }}
+        >
+          💰 Export Budgets
+        </button>
+        
+        <button
+          onClick={handleExportAll}
+          disabled={!expenses.length && !budgetStatus.length}
+          style={{
+            backgroundColor: (expenses.length || budgetStatus.length) ? '#20c997' : '#6c757d',
+            color: 'white',
+            border: 'none',
+            padding: '0.5rem 1rem',
+            borderRadius: '4px',
+            cursor: (expenses.length || budgetStatus.length) ? 'pointer' : 'not-allowed',
+            fontSize: '0.875rem',
+            fontWeight: 'bold'
+          }}
+        >
+          📋 Export All Data
+        </button>
+      </div>
+
       {error && (
         <div style={{ 
-          color: '#721c24',
-          backgroundColor: '#f8d7da',
-          border: '1px solid #f5c6cb',
+          color: error.includes('successfully') ? '#155724' : '#721c24',
+          backgroundColor: error.includes('successfully') ? '#d4edda' : '#f8d7da',
+          border: error.includes('successfully') ? '1px solid #c3e6cb' : '1px solid #f5c6cb',
           padding: '0.75rem',
           borderRadius: '4px',
           marginBottom: '1rem'
@@ -341,18 +800,7 @@ export default function Dashboard({ user, onLogout }) {
                         borderRadius: '4px',
                         cursor: deletingId === e.id ? 'not-allowed' : 'pointer',
                         fontSize: '0.875rem',
-                        opacity: deletingId === e.id ? 0.6 : 1,
-                        transition: 'background-color 0.2s'
-                      }}
-                      onMouseOver={(e) => {
-                        if (deletingId !== e.id) {
-                          e.target.style.backgroundColor = '#c82333';
-                        }
-                      }}
-                      onMouseOut={(e) => {
-                        if (deletingId !== e.id) {
-                          e.target.style.backgroundColor = '#dc3545';
-                        }
+                        opacity: deletingId === e.id ? 0.6 : 1
                       }}
                     >
                       {deletingId === e.id ? 'Deleting...' : 'Delete'}
@@ -378,7 +826,8 @@ export default function Dashboard({ user, onLogout }) {
           </div>
         </>
       )}
+
+      {renderUserModal()}
     </div>
   );
 }
-
