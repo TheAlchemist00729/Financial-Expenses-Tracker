@@ -50,7 +50,7 @@ export default function Dashboard({ user, onLogout }) {
 
       try {
         const budgetRes = await fetchBudgetStatus();
-        setBudgetStatus(budgetRes.data.budgetStatus || []);
+        setBudgetStatus(budgetRes.data || []);
       } catch {
         setBudgetStatus([]);
       }
@@ -88,7 +88,7 @@ export default function Dashboard({ user, onLogout }) {
       setExpenses(exps => exps.filter(e => e.id !== id));
       try {
         const budgetRes = await fetchBudgetStatus();
-        setBudgetStatus(budgetRes.data.budgetStatus || []);
+        setBudgetStatus(budgetRes.data || []);
       } catch {}
     } catch {
       setError('Deletion failed');
@@ -610,27 +610,6 @@ export default function Dashboard({ user, onLogout }) {
             fontSize: '0.875rem', fontWeight: 'bold'
           }}
         >📊 Export Expenses</button>
-        <button
-          onClick={handleExportBudgets}
-          style={{
-            backgroundColor: budgetStatus.length ? '#fd7e14' : '#6c757d',
-            cursor: 'pointer',
-            color: 'white', border: 'none',
-            padding: '0.5rem 1rem', borderRadius: '4px',
-            fontSize: '0.875rem', fontWeight: 'bold'
-          }}
-        >💰 Export Budgets</button>
-        <button
-          onClick={handleExportAll}
-          disabled={!expenses.length && !budgetStatus.length}
-          style={{
-            backgroundColor: (expenses.length || budgetStatus.length) ? '#20c997' : '#6c757d',
-            color: 'white', border: 'none',
-            padding: '0.5rem 1rem', borderRadius: '4px',
-            cursor: (expenses.length || budgetStatus.length) ? 'pointer' : 'not-allowed',
-            fontSize: '0.875rem', fontWeight: 'bold'
-          }}
-        >📋 Export All Data</button>
       </div>
 
       {/* Global error/success banner */}
@@ -733,3 +712,4 @@ export default function Dashboard({ user, onLogout }) {
     </div>
   );
 }
+
