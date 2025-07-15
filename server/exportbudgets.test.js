@@ -1,9 +1,8 @@
 const request = require('supertest');
 const express = require('express');
 const jwt = require('jsonwebtoken');
-const { describe, it, expect, beforeEach, afterEach, jest } = require('@jest/globals');
+const { describe, it, expect, beforeEach, afterEach } = require('@jest/globals');
 
-// Mock database/data access layer
 const mockDataService = {
   getVisualizationData: jest.fn(),
   getBudgetPerformance: jest.fn(),
@@ -12,7 +11,6 @@ const mockDataService = {
   getUserData: jest.fn(),
 };
 
-// Mock the actual route handlers
 const visualizationController = {
   getVisualizationData: async (req, res) => {
     try {
@@ -39,12 +37,10 @@ const visualizationController = {
       const userId = req.user.id;
       const { format = 'json', dateRange } = req.query;
       
-      // Validate format
       if (!['json', 'csv', 'xlsx'].includes(format)) {
         return res.status(400).json({ error: 'Invalid export format' });
       }
       
-      // Fetch all required data
       const [visualizationData, budgetPerformance, budgetAlerts, criticalInsights] = await Promise.all([
         mockDataService.getVisualizationData(userId),
         mockDataService.getBudgetPerformance(userId),
@@ -63,7 +59,6 @@ const visualizationController = {
         dateRange
       };
       
-      // Set appropriate headers based on format
       switch (format) {
         case 'json':
           res.setHeader('Content-Type', 'application/json');
@@ -87,7 +82,6 @@ const visualizationController = {
   }
 };
 
-// Authentication middleware mock
 const authMiddleware = (req, res, next) => {
   const token = req.headers.authorization?.split(' ')[1];
   
@@ -104,12 +98,10 @@ const authMiddleware = (req, res, next) => {
   }
 };
 
-// Create Express app for testing
 const createApp = () => {
   const app = express();
   app.use(express.json());
   
-  // Routes
   app.get('/visualization/data', authMiddleware, visualizationController.getVisualizationData);
   app.get('/visualization/budget-performance', authMiddleware, visualizationController.getBudgetPerformance);
   app.get('/visualization/export', authMiddleware, visualizationController.exportData);
@@ -131,7 +123,6 @@ describe('Export Data Backend Test Suite', () => {
       { expiresIn: '1h' }
     );
     
-    // Reset all mocks
     jest.clearAllMocks();
   });
 
@@ -411,7 +402,6 @@ describe('Export Data Backend Test Suite', () => {
       mockDataService.getBudgetAlerts.mockResolvedValue([]);
       mockDataService.getCriticalInsights.mockResolvedValue([]);
 
-      // Get individual endpoints
       const visualResponse = await request(app)
         .get('/visualization/data')
         .set('Authorization', `Bearer ${validToken}`)
@@ -422,13 +412,11 @@ describe('Export Data Backend Test Suite', () => {
         .set('Authorization', `Bearer ${validToken}`)
         .expect(200);
 
-      // Get export
       const exportResponse = await request(app)
         .get('/visualization/export')
         .set('Authorization', `Bearer ${validToken}`)
         .expect(200);
 
-      // Verify consistency
       expect(exportResponse.body.visualizationData).toEqual(visualResponse.body);
       expect(exportResponse.body.budgetPerformance).toEqual(performanceResponse.body);
     });
