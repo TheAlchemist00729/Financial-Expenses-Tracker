@@ -86,3 +86,43 @@
 [2025-07-09T21:15:29.481Z] Login success for user: joshua (id: 49)
 [2025-07-09T21:19:57.660Z] Login requested for user: joshua
 [2025-07-09T21:19:57.740Z] Login success for user: joshua (id: 49)
+[2025-07-23T16:55:34.649Z] Login requested for user: joshua
+[2025-07-23T16:55:34.879Z] Login error for joshua: relation "users" does not exist
+[2025-07-23T16:55:36.417Z] Login requested for user: joshua
+[2025-07-23T16:55:36.421Z] Login error for joshua: relation "users" does not exist
+[2025-07-23T16:55:46.906Z] Login requested for user: joshua
+[2025-07-23T16:55:46.911Z] Login error for joshua: relation "users" does not exist
+[2025-07-23T16:56:12.350Z] Signup requested for user: joshua
+[2025-07-23T16:56:12.358Z] Signup error for joshua: relation "users" does not exist
+[2025-07-23T16:58:57.212Z] Login requested for user: joshua
+[2025-07-23T16:58:57.232Z] Login error for joshua: relation "users" does not exist
+[2025-07-23T16:59:03.473Z] Login requested for user: joshua
+[2025-07-23T16:59:03.477Z] Login error for joshua: relation "users" does not exist
+[2025-07-23T16:59:14.567Z] Signup requested for user: joshua
+[2025-07-23T16:59:14.572Z] Signup error for joshua: relation "users" does not exist
+[2025-07-23T17:05:08.724Z] Login requested for user: joshua
+[2025-07-23T17:05:08.767Z] Login error for joshua: relation "users" does not exist
+[2025-07-23T17:05:18.064Z] Signup requested for user: joshua
+[2025-07-23T17:05:18.069Z] Signup error for joshua: relation "users" does not exist
+[2025-07-23T17:05:37.941Z] Login requested for user: joshua
+[2025-07-23T17:05:37.946Z] Login error for joshua: relation "users" does not exist
+[2025-07-23T17:06:44.533Z] Login requested for user: joshua
+[2025-07-23T17:06:44.564Z] Login error for joshua: relation "users" does not exist
+[2025-07-23T17:06:51.536Z] Signup requested for user: joshua
+[2025-07-23T17:06:51.540Z] Signup error for joshua: relation "users" does not exist
+[2025-07-23T17:14:43.788Z] Signup requested for user: joshua
+[2025-07-23T17:14:43.817Z] Signup error for joshua: relation "users" does not exist
+[2025-07-23T17:33:15.666Z] Signup requested for user: joshua
+[2025-07-23T17:33:15.704Z] Signup error for joshua: relation "users" does not exist
+[2025-07-23T17:33:22.525Z] Login requested for user: joshua
+[2025-07-23T17:33:22.529Z] Login error for joshua: relation "users" does not exist
+[2025-07-23T17:36:35.963Z] Login requested for user: joshua
+[2025-07-23T17:36:35.997Z] Login error for joshua: relation "users" does not exist
+[2025-07-23T17:36:43.331Z] Signup requested for user: joshua
+[2025-07-23T17:36:43.336Z] Signup error for joshua: relation "users" does not exist
+[2025-07-23T17:56:42.420Z] Login requested for user: joshua
+[2025-07-23T17:56:42.443Z] Login failed: user not found - joshua
+[2025-07-23T17:56:51.726Z] Signup requested for user: joshua
+[2025-07-23T17:56:51.798Z] Signup success for user: joshua (id: 2)
+[2025-07-23T17:56:58.719Z] Login requested for user: joshua
+[2025-07-23T17:56:58.780Z] Login success for user: joshua (id: 2)
