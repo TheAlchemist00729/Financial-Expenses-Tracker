@@ -38,6 +38,42 @@ export default function Dashboard({ user, onLogout }) {
   const [searchTerm, setSearchTerm] = useState('');
   const navigate = useNavigate();
 
+  // Enhanced filter function
+  const filterExpenses = (expenses, searchTerm) => {
+    if (!searchTerm || searchTerm.trim() === '') {
+      return expenses;
+    }
+    const normalizedSearchTerm = searchTerm
+      .toLowerCase()
+      .replace(/[^\w\s]/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+    return expenses.filter(expense => {
+      const normalizedDescription = (expense.description || '')
+        .toLowerCase()
+        .replace(/[^\w\s]/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+      const normalizedCategory = (expense.category || '')
+        .toLowerCase()
+        .replace(/[^\w\s]/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+      const normalizedDate = expense.date
+        ? new Date(expense.date).toISOString().split('T')[0]
+        : '';
+      const descriptionMatch = normalizedDescription.includes(normalizedSearchTerm);
+      const categoryMatch = normalizedCategory.includes(normalizedSearchTerm);
+      const dateMatch = normalizedDate.includes(searchTerm.toLowerCase().trim());
+      const searchWords = normalizedSearchTerm.split(' ').filter(word => word.length > 0);
+      const wordMatches = searchWords.some(word =>
+        normalizedDescription.includes(word) ||
+        normalizedCategory.includes(word)
+      );
+      return descriptionMatch || categoryMatch || dateMatch || wordMatches;
+    });
+  };
+
   // Load expenses, summary, budgets
   const loadData = async () => {
     setError('');
@@ -524,11 +560,8 @@ export default function Dashboard({ user, onLogout }) {
     );
   };
 
-  // Filtered expenses
-  const filteredExpenses = expenses.filter(e =>
-    e.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    (e.category || '').toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  // Use the enhanced filter function
+  const filteredExpenses = filterExpenses(expenses, searchTerm);
 
   return (
     <div style={{ maxWidth: 600, margin: '2rem auto', padding: '1rem' }}>
@@ -638,19 +671,42 @@ export default function Dashboard({ user, onLogout }) {
             <SummaryChart data={summary} />
           </div>
 
-          {/* Search Bar */}
+          {/* Enhanced Search Bar */}
           <div style={{ margin: '0 auto 1rem', maxWidth: 400, textAlign: 'center' }}>
             <input
               type="text"
-              placeholder="Search expenses…"
+              placeholder="Search expenses by description, category, or date..."
               value={searchTerm}
               onChange={e => setSearchTerm(e.target.value)}
               style={{
-                width: '100%', padding: '0.5rem',
-                border: '1px solid #ddd', borderRadius: '4px',
-                fontSize: '1rem'
+                width: '100%', padding: '0.75rem',
+                border: '2px solid #ddd', borderRadius: '8px',
+                fontSize: '1rem', boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+                transition: 'border-color 0.2s ease'
               }}
+              onFocus={e => e.target.style.borderColor = '#007bff'}
+              onBlur={e => e.target.style.borderColor = '#ddd'}
             />
+            {searchTerm && (
+              <div style={{ 
+                textAlign: 'left', 
+                fontSize: '0.875rem', 
+                color: '#666', 
+                marginTop: '0.5rem',
+                padding: '0.5rem',
+                backgroundColor: '#f8f9fa',
+                borderRadius: '4px',
+                border: '1px solid #dee2e6'
+              }}>
+                <strong>Search tips:</strong> You can search by description, category, or date (YYYY-MM-DD format). 
+                Multiple words will match any part of the expense.
+                {filteredExpenses.length !== expenses.length && (
+                  <div style={{ marginTop: '0.25rem', color: '#007bff' }}>
+                    Showing {filteredExpenses.length} of {expenses.length} expenses
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
           <div>
@@ -692,6 +748,28 @@ export default function Dashboard({ user, onLogout }) {
                   </div>
                 ))}
               </div>
+            ) : searchTerm ? (
+              <div style={{
+                textAlign: 'center', padding: '2rem', color: '#777',
+                backgroundColor: '#f8f9fa', borderRadius: '8px',
+                border: '1px solid #dee2e6'
+              }}>
+                <p style={{ margin: 0, fontSize: '1.125rem' }}>No expenses match your search</p>
+                <p style={{ margin: '0.5rem 0 0', fontSize: '0.875rem' }}>
+                  Try searching with different keywords or clear the search to see all expenses.
+                </p>
+                <button
+                  onClick={() => setSearchTerm('')}
+                  style={{
+                    backgroundColor: '#007bff', color: 'white',
+                    border: 'none', padding: '0.5rem 1rem',
+                    borderRadius: '4px', cursor: 'pointer',
+                    fontSize: '0.875rem', marginTop: '1rem'
+                  }}
+                >
+                  Clear Search
+                </button>
+              </div>
             ) : (
               <div style={{
                 textAlign: 'center', padding: '2rem', color: '#777',
@@ -712,4 +790,3 @@ export default function Dashboard({ user, onLogout }) {
     </div>
   );
 }
-
