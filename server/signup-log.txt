@@ -132,3 +132,13 @@
 [2025-07-23T18:26:38.556Z] Login success for user: joshua (id: 2)
 [2025-07-23T18:45:53.544Z] Login requested for user: joshua
 [2025-07-23T18:45:54.087Z] Login success for user: joshua (id: 2)
+[2025-08-05T15:06:18.734Z] Signup requested for user: tom
+[2025-08-05T15:06:18.869Z] Signup success for user: tom (id: 3)
+[2025-08-05T15:06:28.246Z] Login requested for user: tom
+[2025-08-05T15:06:28.308Z] Login success for user: tom (id: 3)
+[2025-08-05T15:06:53.648Z] Login requested for user: tom
+[2025-08-05T15:06:53.713Z] Login success for user: tom (id: 3)
+[2025-08-05T15:18:48.971Z] Login requested for user: tom
+[2025-08-05T15:18:49.037Z] Login success for user: tom (id: 3)
+[2025-08-05T15:58:12.374Z] Login requested for user: joshua
+[2025-08-05T15:58:12.460Z] Login success for user: joshua (id: 2)

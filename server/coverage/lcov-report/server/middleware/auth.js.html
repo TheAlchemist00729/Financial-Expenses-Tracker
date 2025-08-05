@@ -23,30 +23,30 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">23.52% </span>
+                <span class="strong">94.11% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>4/17</span>
+                <span class='fraction'>16/17</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">83.33% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>0/6</span>
+                <span class='fraction'>5/6</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>0/1</span>
+                <span class='fraction'>1/1</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">23.52% </span>
+                <span class="strong">94.11% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>4/17</span>
+                <span class='fraction'>16/17</span>
             </div>
         
             
@@ -61,7 +61,7 @@
             </div>
         </template>
     </div>
-    <div class='status-line low'></div>
+    <div class='status-line high'></div>
     <pre><table class="coverage">
 <tr><td class="line-count quiet"><a name='L1'></a><a href='#L1'>1</a>
 <a name='L2'></a><a href='#L2'>2</a>
@@ -100,26 +100,26 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">5x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">5x</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-yes">4x</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -129,27 +129,27 @@ require('dotenv').config({
   path: path.resolve(__dirname, '../.env'),
 });
 &nbsp;
-module.exports = function <span class="fstat-no" title="function not covered" >ensureAuth(</span>req, res, next) {
-  const authHeader = <span class="cstat-no" title="statement not covered" >req.headers.authorization;</span>
+module.exports = function ensureAuth(req, res, next) {
+  const authHeader = req.headers.authorization;
 &nbsp;
-<span class="cstat-no" title="statement not covered" >  if (!authHeader) {</span>
-<span class="cstat-no" title="statement not covered" >    return res.status(401).json({ error: 'Authorization header missing' });</span>
+  if (!authHeader) {
+    return res.status(401).json({ error: 'Authorization header missing' });
   }
 &nbsp;
-  const parts = <span class="cstat-no" title="statement not covered" >authHeader.split(' ');</span>
-<span class="cstat-no" title="statement not covered" >  if (parts.length !== 2 || parts[0] !== 'Bearer') {</span>
+  const parts = authHeader.split(' ');
+  <span class="missing-if-branch" title="if path not taken" >I</span>if (parts.length !== 2 || parts[0] !== 'Bearer') {
 <span class="cstat-no" title="statement not covered" >    return res.status(401).json({ error: 'Malformed authorization header' });</span>
   }
 &nbsp;
-  const token = <span class="cstat-no" title="statement not covered" >parts[1];</span>
+  const token = parts[1];
 &nbsp;
-<span class="cstat-no" title="statement not covered" >  try {</span>
-    const payload = <span class="cstat-no" title="statement not covered" >jwt.verify(token, process.env.JWT_SECRET);</span>
-<span class="cstat-no" title="statement not covered" >    req.user = payload;</span>
-<span class="cstat-no" title="statement not covered" >    return next();</span>
+  try {
+    const payload = jwt.verify(token, process.env.JWT_SECRET);
+    req.user = payload;
+    return next();
   } catch (err) {
-<span class="cstat-no" title="statement not covered" >    console.error('[Auth] JWT verification failed:', err.message);</span>
-<span class="cstat-no" title="statement not covered" >    return res.status(401).json({ error: 'Token is not valid or has expired' });</span>
+    console.error('[Auth] JWT verification failed:', err.message);
+    return res.status(401).json({ error: 'Token is not valid or has expired' });
   }
 };
 &nbsp;
@@ -160,7 +160,7 @@ module.exports = function <span class="fstat-no" title="function not covered" >e
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-07-15T20:09:29.978Z
+                at 2025-08-05T15:53:25.687Z
             </div>
         <script src="../../prettify.js"></script>
         <script>
