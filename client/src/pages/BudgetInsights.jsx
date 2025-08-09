@@ -231,6 +231,34 @@ const AlertModal = ({ alerts, isOpen, onClose, onAcknowledge }) => {
                 📋 Recommended Action: {currentAlert.action}
               </p>
             </div>
+            
+            {/* Reallocation Suggestions */}
+            {currentAlert.reallocationSuggestions && currentAlert.reallocationSuggestions.length > 0 && (
+              <div
+                style={{
+                  marginTop: '0.75rem',
+                  padding: '0.75rem',
+                  backgroundColor: 'rgba(34, 197, 94, 0.1)',
+                  borderRadius: '4px',
+                  border: '1px solid #22c55e',
+                }}
+              >
+                <h5 style={{ margin: '0 0 0.5rem 0', fontWeight: 'bold', color: '#15803d' }}>
+                  💡 Budget Reallocation Suggestions:
+                </h5>
+                {currentAlert.reallocationSuggestions.map((suggestion, index) => (
+                  <div key={index} style={{ marginBottom: '0.5rem', fontSize: '0.875rem' }}>
+                    <strong>Transfer ${suggestion.amount.toFixed(2)}</strong> from{' '}
+                    <em>{suggestion.fromCategory}</em> to cover the deficit
+                    <br />
+                    <span style={{ fontSize: '0.75rem', color: '#6b7280' }}>
+                      ({suggestion.fromCategory} has ${suggestion.available.toFixed(2)} available, 
+                      {suggestion.utilizationPercent.toFixed(1)}% utilized)
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Progress Bar */}
@@ -392,6 +420,244 @@ const AlertModal = ({ alerts, isOpen, onClose, onAcknowledge }) => {
   );
 };
 
+// Enhanced Budget Reallocation Suggestions Component
+const BudgetReallocationSuggestions = ({ suggestions, onAcceptSuggestion, budgetUtilization }) => {
+  const [expandedSuggestions, setExpandedSuggestions] = useState(new Set());
+  
+  if (!suggestions || suggestions.length === 0) {
+    return null;
+  }
+
+  const toggleSuggestionDetails = (index) => {
+    const newExpanded = new Set(expandedSuggestions);
+    if (newExpanded.has(index)) {
+      newExpanded.delete(index);
+    } else {
+      newExpanded.add(index);
+    }
+    setExpandedSuggestions(newExpanded);
+  };
+
+  const getSeverityColor = (overrunPercent) => {
+    if (overrunPercent > 50) return 'text-red-800 bg-red-100 border-red-300';
+    if (overrunPercent > 25) return 'text-orange-800 bg-orange-100 border-orange-300';
+    if (overrunPercent > 10) return 'text-yellow-800 bg-yellow-100 border-yellow-300';
+    return 'text-blue-800 bg-blue-100 border-blue-300';
+  };
+
+  const getPriorityLabel = (overrunPercent) => {
+    if (overrunPercent > 50) return { label: 'URGENT', icon: '🚨' };
+    if (overrunPercent > 25) return { label: 'HIGH', icon: '⚠️' };
+    if (overrunPercent > 10) return { label: 'MEDIUM', icon: '⚡' };
+    return { label: 'LOW', icon: '💡' };
+  };
+
+  return (
+    <div className="bg-white rounded-lg shadow-lg mb-8 border border-gray-200">
+      <div className="px-6 py-4 border-b border-gray-200 bg-gradient-to-r from-green-50 to-blue-50">
+        <div className="flex items-center justify-between">
+          <div>
+            <h3 className="text-xl font-semibold text-gray-900 flex items-center">
+              <span className="mr-3 text-2xl">🎯</span>
+              Smart Budget Reallocation Suggestions
+            </h3>
+            <p className="text-sm text-gray-600 mt-1">
+              AI-powered recommendations to optimize your budget allocation and resolve overspending
+            </p>
+          </div>
+          <div className="text-right">
+            <div className="text-2xl font-bold text-green-600">{suggestions.length}</div>
+            <div className="text-xs text-gray-500">Suggestions Available</div>
+          </div>
+        </div>
+      </div>
+      
+      <div className="p-6">
+        <div className="space-y-6">
+          {suggestions.map((suggestion, index) => {
+            const priority = getPriorityLabel(suggestion.overrunPercent);
+            const isExpanded = expandedSuggestions.has(index);
+            
+            return (
+              <div 
+                key={index} 
+                className={`border-2 rounded-lg overflow-hidden transition-all duration-300 ${getSeverityColor(suggestion.overrunPercent)}`}
+              >
+                {/* Header */}
+                <div className="p-4">
+                  <div className="flex justify-between items-start mb-3">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-3 mb-2">
+                        <span className="text-lg">{priority.icon}</span>
+                        <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-gray-800 text-white">
+                          {priority.label} PRIORITY
+                        </span>
+                        <span className="text-sm font-medium text-gray-600">
+                          {suggestion.overrunPercent.toFixed(1)}% Over Budget
+                        </span>
+                      </div>
+                      <h4 className="text-lg font-bold text-gray-900 mb-1">
+                        📊 {suggestion.overbudgetCategory}
+                      </h4>
+                      <div className="grid grid-cols-3 gap-4 text-sm">
+                        <div>
+                          <span className="text-gray-600">Budget:</span>
+                          <div className="font-semibold">${suggestion.budget.toFixed(2)}</div>
+                        </div>
+                        <div>
+                          <span className="text-gray-600">Spent:</span>
+                          <div className="font-semibold text-red-600">${suggestion.currentSpending.toFixed(2)}</div>
+                        </div>
+                        <div>
+                          <span className="text-gray-600">Deficit:</span>
+                          <div className="font-bold text-red-700">${suggestion.deficit.toFixed(2)}</div>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <button
+                      onClick={() => toggleSuggestionDetails(index)}
+                      className="ml-4 px-3 py-2 bg-white border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
+                    >
+                      {isExpanded ? '▼ Hide Details' : '▶ Show Details'}
+                    </button>
+                  </div>
+
+                  {/* Quick Action Button */}
+                  <div className="flex justify-between items-center">
+                    <div className="text-sm text-gray-700">
+                      <strong>Quick Fix:</strong> Transfer funds from {suggestion.sources.length} 
+                      underutilized {suggestion.sources.length === 1 ? 'category' : 'categories'}
+                    </div>
+                    <button
+                      onClick={() => onAcceptSuggestion && onAcceptSuggestion(suggestion, suggestion.sources[0])}
+                      className="px-4 py-2 bg-green-600 text-white font-semibold rounded-md hover:bg-green-700 transition-colors"
+                    >
+                      Apply All Transfers
+                    </button>
+                  </div>
+                </div>
+
+                {/* Expanded Details */}
+                {isExpanded && (
+                  <div className="border-t bg-white">
+                    <div className="p-4">
+                      <h5 className="font-semibold text-gray-900 mb-3 flex items-center">
+                        <span className="mr-2">💰</span>
+                        Detailed Reallocation Plan
+                      </h5>
+                      
+                      <div className="space-y-3">
+                        {suggestion.sources.map((source, sourceIndex) => (
+                          <div key={sourceIndex} className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                            <div className="flex justify-between items-start mb-3">
+                              <div className="flex-1">
+                                <h6 className="font-medium text-gray-900 mb-1">
+                                  📂 {source.category}
+                                </h6>
+                                <div className="grid grid-cols-3 gap-3 text-sm">
+                                  <div>
+                                    <span className="text-gray-600">Available:</span>
+                                    <div className="font-semibold text-green-600">
+                                      ${source.available.toFixed(2)}
+                                    </div>
+                                  </div>
+                                  <div>
+                                    <span className="text-gray-600">Utilization:</span>
+                                    <div className="font-semibold">
+                                      {source.utilizationPercent.toFixed(1)}%
+                                    </div>
+                                  </div>
+                                  <div>
+                                    <span className="text-gray-600">Transfer Amount:</span>
+                                    <div className="font-bold text-blue-600">
+                                      ${source.amount.toFixed(2)}
+                                    </div>
+                                  </div>
+                                </div>
+                                
+                                {/* Progress bar for utilization */}
+                                <div className="mt-2">
+                                  <div className="flex justify-between text-xs text-gray-600 mb-1">
+                                    <span>Current Utilization</span>
+                                    <span>{source.utilizationPercent.toFixed(1)}%</span>
+                                  </div>
+                                  <div className="w-full bg-gray-200 rounded-full h-2">
+                                    <div
+                                      className="bg-blue-500 h-2 rounded-full transition-all duration-300"
+                                      style={{ width: `${Math.min(source.utilizationPercent, 100)}%` }}
+                                    ></div>
+                                  </div>
+                                </div>
+                              </div>
+                              
+                              <button
+                                onClick={() => onAcceptSuggestion && onAcceptSuggestion(suggestion, source)}
+                                className="ml-3 px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 transition-colors"
+                              >
+                                Transfer ${source.amount.toFixed(0)}
+                              </button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                      
+                      {/* Impact Analysis */}
+                      <div className="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
+                        <h6 className="font-semibold text-blue-900 mb-2 flex items-center">
+                          <span className="mr-2">📈</span>
+                          Impact Analysis
+                        </h6>
+                        <div className="grid grid-cols-2 gap-4 text-sm">
+                          <div>
+                            <span className="text-blue-700">Coverage:</span>
+                            <div className="font-semibold">
+                              {suggestion.coverage ? suggestion.coverage.toFixed(1) : '100'}% of deficit
+                            </div>
+                          </div>
+                          <div>
+                            <span className="text-blue-700">Risk Level:</span>
+                            <div className="font-semibold">
+                              {suggestion.overrunPercent > 50 ? 'High' : 
+                               suggestion.overrunPercent > 25 ? 'Medium' : 'Low'}
+                            </div>
+                          </div>
+                        </div>
+                        <div className="mt-2 text-xs text-blue-700">
+                          This reallocation will bring {suggestion.overbudgetCategory} back within budget 
+                          while maintaining healthy utilization rates in donor categories.
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+        
+        {/* Summary Footer */}
+        <div className="mt-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
+          <div className="flex justify-between items-center">
+            <div>
+              <h4 className="font-semibold text-gray-900">Summary</h4>
+              <p className="text-sm text-gray-600">
+                Total potential savings: ${suggestions.reduce((sum, s) => sum + s.deficit, 0).toFixed(2)}
+              </p>
+            </div>
+            <button
+              onClick={() => suggestions.forEach(s => onAcceptSuggestion && onAcceptSuggestion(s, s.sources[0]))}
+              className="px-6 py-2 bg-gradient-to-r from-green-600 to-blue-600 text-white font-semibold rounded-md hover:from-green-700 hover:to-blue-700 transition-all duration-300"
+            >
+              Apply All Suggestions
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 // Sound notification function
 const playAlertSound = (severity) => {
   try {
@@ -433,6 +699,7 @@ const BudgetInsights = () => {
   const [budgetPerformance, setBudgetPerformance] = useState(null);
   const [budgetAlerts, setBudgetAlerts] = useState([]);
   const [criticalInsights, setCriticalInsights] = useState([]);
+  const [reallocationSuggestions, setReallocationSuggestions] = useState([]);
 
   const [showAlertModal, setShowAlertModal] = useState(false);
   const [unacknowledgedAlerts, setUnacknowledgedAlerts] = useState([]);
@@ -489,8 +756,12 @@ const BudgetInsights = () => {
       setVisualizationData(visualResponse.data);
       setBudgetPerformance(performanceResponse.data);
 
-      generateBudgetAlerts(visualResponse.data);
-      generateCriticalInsights(visualResponse.data, performanceResponse.data);
+      // Generate reallocation suggestions first, then use them in alerts
+      const suggestions = generateReallocationSuggestions(visualResponse.data);
+      setReallocationSuggestions(suggestions);
+      
+      generateBudgetAlerts(visualResponse.data, suggestions);
+      generateCriticalInsights(visualResponse.data, performanceResponse.data, suggestions);
 
       setError(null);
     } catch (err) {
@@ -501,7 +772,68 @@ const BudgetInsights = () => {
     }
   };
 
-  const generateBudgetAlerts = (data) => {
+  const generateReallocationSuggestions = (data) => {
+    if (!data || !data.budgetUtilization) return [];
+
+    const suggestions = [];
+    const budgetData = data.budgetUtilization;
+
+    // Find overbudget categories
+    const overbudgetCategories = budgetData.filter(item => 
+      parseFloat(item.utilization_percentage || 0) > 100
+    );
+
+    // Find underutilized categories (less than 70% utilized)
+    const underutilizedCategories = budgetData.filter(item => {
+      const utilization = parseFloat(item.utilization_percentage || 0);
+      const remaining = parseFloat(item.remaining_amount || 0);
+      return utilization < 70 && remaining > 10; // At least $10 available
+    }).sort((a, b) => parseFloat(b.remaining_amount) - parseFloat(a.remaining_amount));
+
+    overbudgetCategories.forEach(overbudget => {
+      const deficit = parseFloat(overbudget.spent_amount) - parseFloat(overbudget.budget_amount);
+      const overrunPercent = ((parseFloat(overbudget.spent_amount) / parseFloat(overbudget.budget_amount)) - 1) * 100;
+      
+      if (deficit > 0) {
+        const sources = [];
+        let remainingDeficit = deficit;
+
+        // Try to find sources to cover the deficit
+        for (const source of underutilizedCategories) {
+          if (remainingDeficit <= 0) break;
+          
+          const available = parseFloat(source.remaining_amount);
+          const transferAmount = Math.min(available * 0.8, remainingDeficit); // Use max 80% of available
+          
+          if (transferAmount >= 5) { // Minimum $5 transfer
+            sources.push({
+              category: source.category,
+              amount: transferAmount,
+              available: available,
+              utilizationPercent: parseFloat(source.utilization_percentage || 0)
+            });
+            remainingDeficit -= transferAmount;
+          }
+        }
+
+        if (sources.length > 0) {
+          suggestions.push({
+            overbudgetCategory: overbudget.category,
+            deficit: deficit,
+            currentSpending: parseFloat(overbudget.spent_amount),
+            budget: parseFloat(overbudget.budget_amount),
+            overrunPercent: overrunPercent,
+            sources: sources,
+            coverage: ((deficit - remainingDeficit) / deficit) * 100
+          });
+        }
+      }
+    });
+
+    return suggestions;
+  };
+
+  const generateBudgetAlerts = (data, suggestions = []) => {
     if (!data || !data.budgetUtilization) return;
 
     const alerts = [];
@@ -513,18 +845,34 @@ const BudgetInsights = () => {
       const spentAmount = parseFloat(item.spent_amount || 0);
       const remainingAmount = parseFloat(item.remaining_amount || 0);
 
+      // Find reallocation suggestions for this category
+      const categoryReallocation = suggestions.find(
+        suggestion => suggestion.overbudgetCategory === category
+      );
+
+      let reallocationSuggestions_alert = [];
+      if (categoryReallocation) {
+        reallocationSuggestions_alert = categoryReallocation.sources.map(source => ({
+          fromCategory: source.category,
+          amount: source.amount,
+          available: source.available,
+          utilizationPercent: source.utilizationPercent
+        }));
+      }
+
       if (utilizationPercent >= 100) {
         alerts.push({
           id: `critical-${category}-${Date.now()}`,
           type: 'critical',
           category,
           title: `Budget Exceeded: ${category}`,
-          message: `You've spent $${spentAmount.toFixed(2)} of your $${budgetAmount.toFixed(
+          message: `You've spent ${spentAmount.toFixed(2)} of your ${budgetAmount.toFixed(
             2
           )} budget (${utilizationPercent.toFixed(1)}%)`,
           severity: 'critical',
           icon: '🚨',
-          action: 'Immediate action required - Stop spending in this category',
+          action: 'Immediate action required - Stop spending in this category or reallocate funds',
+          reallocationSuggestions: reallocationSuggestions_alert,
           timestamp: new Date().toISOString(),
         });
       } else if (utilizationPercent >= 90) {
@@ -535,10 +883,11 @@ const BudgetInsights = () => {
           title: `Budget Alert: ${category}`,
           message: `You've used ${utilizationPercent.toFixed(
             1
-          )}% of your budget. Only $${remainingAmount.toFixed(2)} remaining.`,
+          )}% of your budget. Only ${remainingAmount.toFixed(2)} remaining.`,
           severity: 'high',
           icon: '⚠️',
-          action: 'Monitor spending closely - Consider alternative options',
+          action: 'Monitor spending closely - Consider alternative options or reallocate funds',
+          reallocationSuggestions: reallocationSuggestions_alert,
           timestamp: new Date().toISOString(),
         });
       } else if (utilizationPercent >= 80) {
@@ -549,10 +898,11 @@ const BudgetInsights = () => {
           title: `Budget Warning: ${category}`,
           message: `You've used ${utilizationPercent.toFixed(
             1
-          )}% of your budget. $${remainingAmount.toFixed(2)} remaining.`,
+          )}% of your budget. ${remainingAmount.toFixed(2)} remaining.`,
           severity: 'medium',
           icon: '⚡',
           action: 'Consider reducing spending in this category',
+          reallocationSuggestions: reallocationSuggestions_alert,
           timestamp: new Date().toISOString(),
         });
       }
@@ -566,7 +916,7 @@ const BudgetInsights = () => {
     setBudgetAlerts(alerts);
   };
 
-  const generateCriticalInsights = (visualData, performanceData) => {
+  const generateCriticalInsights = (visualData, performanceData, suggestions = []) => {
     if (!visualData || !performanceData) return;
 
     const insights = [];
@@ -583,6 +933,18 @@ const BudgetInsights = () => {
           message: `${highUtilization.length} categories are approaching or exceeding budget limits`,
           trend: 'negative',
           priority: 'high',
+        });
+      }
+
+      // Add reallocation insight
+      if (suggestions.length > 0) {
+        const totalDeficit = suggestions.reduce((sum, suggestion) => sum + suggestion.deficit, 0);
+        insights.push({
+          id: 'reallocation-opportunity',
+          title: 'Budget Reallocation Opportunity',
+          message: `${totalDeficit.toFixed(2)} in overbudget spending could be covered by reallocating from underutilized categories`,
+          trend: 'positive',
+          priority: 'medium',
         });
       }
     }
@@ -607,6 +969,26 @@ const BudgetInsights = () => {
     }
 
     setCriticalInsights(insights);
+  };
+
+  const handleAcceptSuggestion = async (suggestion, source) => {
+    // This would typically make an API call to update the budget allocations
+    try {
+      console.log('Accepting reallocation suggestion:', {
+        from: source.category,
+        to: suggestion.overbudgetCategory,
+        amount: source.amount
+      });
+      
+      // Show success message
+      alert(`Budget reallocation accepted: ${source.amount.toFixed(2)} transferred from ${source.category} to ${suggestion.overbudgetCategory}`);
+      
+      // Refresh data after reallocation
+      await fetchVisualizationData();
+    } catch (error) {
+      console.error('Error accepting reallocation suggestion:', error);
+      alert('Failed to apply budget reallocation. Please try again.');
+    }
   };
 
   const handleAcknowledgeAlerts = (acknowledgedIds) => {
@@ -638,6 +1020,7 @@ const BudgetInsights = () => {
       budgetPerformance,
       budgetAlerts,
       criticalInsights,
+      reallocationSuggestions,
       exportDate: new Date().toISOString(),
     };
 
@@ -714,7 +1097,7 @@ const BudgetInsights = () => {
                 Budget Insights & Analytics
               </h1>
               <p className="text-sm text-gray-600">
-                Comprehensive analysis of your financial data
+                Comprehensive analysis of your financial data with smart reallocation suggestions
               </p>
             </div>
             <div className="flex space-x-3">
@@ -788,6 +1171,13 @@ const BudgetInsights = () => {
           )}
         </div>
 
+        {/* Budget Reallocation Suggestions */}
+        <BudgetReallocationSuggestions 
+          suggestions={reallocationSuggestions}
+          onAcceptSuggestion={handleAcceptSuggestion}
+          budgetUtilization={budgetUtilization}
+        />
+
         {/* Critical Insights */}
         {criticalInsights.length > 0 && (
           <div className="mb-8">
@@ -816,26 +1206,28 @@ const BudgetInsights = () => {
           </div>
         )}
 
-        <ResponsiveContainer width="100%" height={400}>
-  <BarChart data={budgetUtilization}>
-    <CartesianGrid strokeDasharray="3 3" />
-    <XAxis dataKey="category" />
-    <YAxis />
-    <Tooltip />
-    <Legend />
-    <Bar 
-      dataKey="budget_amount" 
-      name="Budget Amount" 
-      fill="#0088FE"
-    />
-    <Bar 
-      dataKey="spent_amount" 
-      name="Spent Amount" 
-      fill="#FF0000"
-    />
-  </BarChart>
-</ResponsiveContainer>
-
+        <div className="bg-white p-6 rounded-lg shadow mb-8">
+          <h3 className="text-xl font-semibold mb-4">Budget vs Spending</h3>
+          <ResponsiveContainer width="100%" height={400}>
+            <BarChart data={budgetUtilization}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="category" />
+              <YAxis />
+              <Tooltip />
+              <Legend />
+              <Bar 
+                dataKey="budget_amount" 
+                name="Budget Amount" 
+                fill="#0088FE"
+              />
+              <Bar 
+                dataKey="spent_amount" 
+                name="Spent Amount" 
+                fill="#FF0000"
+              />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
 
         {expenseTrends && expenseTrends.length > 0 && (
           <div className="bg-white p-6 rounded-lg shadow mb-8">
@@ -872,7 +1264,7 @@ const BudgetInsights = () => {
                   <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                 ))}
               </Pie>
-              <Tooltip formatter={(value) => [`$${parseFloat(value).toFixed(2)}`, 'Amount']} />
+              <Tooltip formatter={(value) => [`${parseFloat(value).toFixed(2)}`, 'Amount']} />
             </PieChart>
           </ResponsiveContainer>
         </div>
@@ -884,7 +1276,7 @@ const BudgetInsights = () => {
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="date" />
               <YAxis />
-              <Tooltip formatter={(value) => [`$${parseFloat(value).toFixed(2)}`, 'Amount']} />
+              <Tooltip formatter={(value) => [`${parseFloat(value).toFixed(2)}`, 'Amount']} />
               <Area type="monotone" dataKey="daily_total" fillOpacity={0.6} />
             </AreaChart>
           </ResponsiveContainer>
@@ -920,6 +1312,9 @@ const BudgetInsights = () => {
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Alert Level
                   </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Reallocation
+                  </th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
@@ -945,6 +1340,14 @@ const BudgetInsights = () => {
                   };
 
                   const alertLevel = getAlertLevel(utilizationPercent);
+                  
+                  // Check if this category has reallocation suggestions
+                  const hasReallocationSuggestion = reallocationSuggestions.some(
+                    suggestion => suggestion.overbudgetCategory === item.category
+                  );
+                  
+                  // Check if this category can be a donor
+                  const canBeDonor = utilizationPercent < 70 && parseFloat(item.remaining_amount || 0) > 10;
 
                   return (
                     <tr
@@ -954,11 +1357,20 @@ const BudgetInsights = () => {
                           ? 'bg-red-50'
                           : utilizationPercent >= 80
                           ? 'bg-yellow-50'
+                          : canBeDonor
+                          ? 'bg-blue-50'
                           : ''
                       }
                     >
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                        {item.category}
+                      <td className="px-6 py-4 text-sm font-medium text-gray-900">
+                        <div className="flex flex-col">
+                          <span className="font-bold">{item.category}</span>
+                          {canBeDonor && (
+                            <span className="mt-1 text-xs font-bold text-blue-600 bg-blue-100 px-2 py-1 rounded self-start">
+                              💰 Reallocation Available
+                            </span>
+                          )}
+                        </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                         ${parseFloat(item.budget_amount || 0).toFixed(2)}
@@ -986,6 +1398,15 @@ const BudgetInsights = () => {
                         <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${alertLevel.color}`}>
                           {alertLevel.text}
                         </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm">
+                        {hasReallocationSuggestion ? (
+                          <span className="text-green-600 font-medium">✓ Suggestions Available</span>
+                        ) : canBeDonor ? (
+                          <span className="text-blue-600 font-medium">💰 Can Reallocate</span>
+                        ) : (
+                          <span className="text-gray-400">-</span>
+                        )}
                       </td>
                     </tr>
                   );

@@ -365,15 +365,15 @@ export default function Budget({ user }) {
                     <h3 style={{ margin: '0 0 0.5rem 0', color: '#333' }}>
                       {budget.name}
                     </h3>
-                    <p style={{ margin: '0.25rem 0', color: '#666' }}>
+                    <p style={{ margin: '0.25rem 0', color: '#777' }}>
                       <strong>Amount:</strong> ${parseFloat(budget.amount).toFixed(2)}
                     </p>
                     {budget.category && (
-                      <p style={{ margin: '0.25rem 0', color: '#666' }}>
+                      <p style={{ margin: '0.25rem 0', color: '#777' }}>
                         <strong>Category:</strong> {budget.category}
                       </p>
                     )}
-                    <p style={{ margin: '0.25rem 0', color: '#666' }}>
+                    <p style={{ margin: '0.25rem 0', color: '#777' }}>
                       <strong>Period:</strong> {budget.period_type} 
                       ({formatDate(budget.start_date)} - {formatDate(budget.end_date)})
                     </p>
