@@ -16,7 +16,7 @@ beforeEach(() => {
 });
 
 describe('Budget Alerts via Visualization Endpoints', () => {
-  describe('GET /visualization/data', () => {
+  describe('GET /api/visualization/data', () => {
     it('should fetch budget data with alert-triggering conditions', async () => {
       const mockBudgetData = [
         { category: 'Food', budget_amount: 500, spent_amount: 600, remaining_amount: -100 }, // Over budget
@@ -51,7 +51,7 @@ describe('Budget Alerts via Visualization Endpoints', () => {
         .mockResolvedValueOnce({ rows: mockBudgetUtilization });
 
       const response = await request(app)
-        .get('/visualization/data')
+        .get('/api/visualization/data')
         .set('Authorization', `Bearer ${validToken}`)
         .expect(200);
 
@@ -71,12 +71,12 @@ describe('Budget Alerts via Visualization Endpoints', () => {
 
     it('should return 401 when no token provided', async () => {
       await request(app)
-        .get('/visualization/data')
+        .get('/api/visualization/data')
         .expect(401);
     });
   });
 
-  describe('GET /visualization/budget-performance', () => {
+  describe('GET /api/visualization/budget-performance', () => {
     it('should fetch budget performance data for alert assessment', async () => {
       const mockPerformanceData = {
         total_budgets: 5,
@@ -88,7 +88,7 @@ describe('Budget Alerts via Visualization Endpoints', () => {
       db.query.mockResolvedValue({ rows: [mockPerformanceData] });
 
       const response = await request(app)
-        .get('/visualization/budget-performance')
+        .get('/api/visualization/budget-performance')
         .set('Authorization', `Bearer ${validToken}`)
         .expect(200);
 
@@ -103,7 +103,7 @@ describe('Budget Alerts via Visualization Endpoints', () => {
       db.query.mockResolvedValue({ rows: [] });
 
       const response = await request(app)
-        .get('/visualization/budget-performance')
+        .get('/api/visualization/budget-performance')
         .set('Authorization', `Bearer ${validToken}`)
         .expect(200);
 
@@ -119,7 +119,7 @@ describe('Budget Alerts via Visualization Endpoints', () => {
       db.query.mockRejectedValue(new Error('Database connection failed'));
 
       await request(app)
-        .get('/visualization/budget-performance')
+        .get('/api/visualization/budget-performance')
         .set('Authorization', `Bearer ${validToken}`)
         .expect(500)
         .expect(res => {
@@ -199,4 +199,3 @@ describe('Budget Alert Logic Tests', () => {
     });
   });
 });
-
