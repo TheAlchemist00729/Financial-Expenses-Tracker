@@ -1247,27 +1247,44 @@ const BudgetInsights = () => {
           </div>
         )}
 
-        <div className="bg-white p-6 rounded-lg shadow mb-8">
-          <h3 className="text-xl font-semibold mb-4">Spending by Category</h3>
-          <ResponsiveContainer width="100%" height={300}>
-            <PieChart>
-              <Pie
-                data={categoryBreakdown || []}
-                cx="50%"
-                cy="50%"
-                labelLine={false}
-                label={({ category, percent }) => `${category} ${(percent * 100).toFixed(0)}%`}
-                outerRadius={80}
-                dataKey="total_amount"
-              >
-                {(categoryBreakdown || []).map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                ))}
-              </Pie>
-              <Tooltip formatter={(value) => [`${parseFloat(value).toFixed(2)}`, 'Amount']} />
-            </PieChart>
-          </ResponsiveContainer>
-        </div>
+       <div className="bg-white p-6 rounded-lg shadow mb-8">
+  <h3 className="text-xl font-semibold mb-4">Spending by Category</h3>
+  {categoryBreakdown && categoryBreakdown.length > 0 ? (
+    <ResponsiveContainer width="100%" height={400}>
+      <PieChart>
+        <Pie
+          data={categoryBreakdown}
+          cx="50%"
+          cy="50%"
+          labelLine={false}
+          label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+          outerRadius={120}
+          innerRadius={0}
+          dataKey="total_amount"
+          nameKey="category"
+        >
+          {categoryBreakdown.map((entry, index) => (
+            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+          ))}
+        </Pie>
+        <Tooltip 
+          formatter={(value, name) => [`${parseFloat(value).toFixed(2)}`, name]} 
+          labelFormatter={(label) => `Category: ${label}`}
+        />
+        <Legend />
+      </PieChart>
+    </ResponsiveContainer>
+  ) : (
+    <div className="flex items-center justify-center h-96 text-gray-500">
+      <div className="text-center">
+        <p className="text-lg mb-2">📊</p>
+        <p>No category breakdown data available</p>
+        <p className="text-sm mt-2">Debug: categoryBreakdown = {JSON.stringify(categoryBreakdown)}</p>
+      </div>
+    </div>
+  )}
+</div>
+
 
         <div className="bg-white p-6 rounded-lg shadow mb-8">
           <h3 className="text-xl font-semibold mb-4">Daily Spending Pattern</h3>
